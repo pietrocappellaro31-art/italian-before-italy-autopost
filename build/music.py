@@ -79,6 +79,8 @@ MOODS = {
 
 
 def score(seconds, mood="caffe", seed=7):
+    if mood in PIANO_PROGS:
+        return piano_score(seconds, mood, seed)
     cfg, rng = MOODS[mood], np.random.default_rng(seed)
     beat = 60 / cfg["bpm"]
     track = np.zeros(int(SR * (seconds + 2)))
@@ -105,6 +107,87 @@ def score(seconds, mood="caffe", seed=7):
     fade = int(SR * 1.2)
     track[-fade:] *= np.linspace(1, 0, fade)
     track[: int(SR * 0.3)] *= np.linspace(0, 1, int(SR * 0.3))
+    return track / (np.abs(track).max() + 1e-9) * 0.7
+
+
+# ---------------------------------------------------------------- piano + violin (owner, 22 Nov: "relaxing piano/violin")
+
+def piano_note(freq, dur, vel=0.8):
+    """Additive piano: slightly inharmonic partials, faster decay for higher partials, soft hammer."""
+    n = int(SR * dur)
+    t = np.arange(n) / SR
+    out = np.zeros(n)
+    B = 0.00035
+    for k in range(1, 11):
+        fk = k * freq * np.sqrt(1 + B * k * k)
+        if fk > SR / 2.2:
+            break
+        amp = (1 / k ** 1.25) * (0.6 + 0.4 * vel)
+        decay = 0.9 + 0.55 * k + freq / 900
+        for detune in (-0.6, 0.6):                        # two strings per note, gentle chorus
+            out += amp * 0.5 * np.sin(2 * np.pi * (fk + detune) * t) * np.exp(-t * decay)
+    hammer = np.random.default_rng(int(freq)).normal(0, 1, n) * np.exp(-t * 140) * 0.02
+    env = np.minimum(1, t / 0.004) * np.minimum(1, (dur - t) / 0.08)
+    return (out + hammer) * env * vel
+
+
+def violin_note(freq, dur, vel=0.5):
+    """Bowed string: band-limited saw with vibrato, slow bow attack and release."""
+    n = int(SR * dur)
+    t = np.arange(n) / SR
+    vib = 1 + 0.0035 * np.sin(2 * np.pi * 5.3 * t) * np.minimum(1, t / 0.8)
+    phase = 2 * np.pi * np.cumsum(freq * vib) / SR
+    out = sum(np.sin(k * phase) / k ** 1.6 for k in range(1, 14) if k * freq < SR / 2.5)
+    env = np.minimum(1, t / 0.7) * np.minimum(1, (dur - t) / 0.9)
+    return out * env * vel
+
+
+def reverb(x, seconds=2.4, mix=0.32):
+    n = int(SR * seconds)
+    rng = np.random.default_rng(3)
+    ir = rng.normal(0, 1, n) * np.exp(-np.linspace(0, 7, n))
+    ir = np.convolve(ir, np.ones(24) / 24, mode="same")    # darker tail
+    ir /= np.sqrt((ir ** 2).sum())
+    size = 1 << int(np.ceil(np.log2(len(x) + n)))
+    wet = np.fft.irfft(np.fft.rfft(x, size) * np.fft.rfft(ir, size), size)[: len(x)]
+    return (1 - mix) * x + mix * wet * 3
+
+
+PIANO_PROGS = {
+    "piano": (72, [("F2", ["F3", "A3", "C4", "E4"]), ("A1", ["A3", "C4", "E4", "G4"]),
+                   ("D2", ["D3", "F3", "A3", "C4"]), ("G1", ["G3", "B3", "D4", "F4"])]),
+    "piano2": (66, [("C2", ["C4", "E4", "G4", "B4"]), ("A1", ["A3", "C4", "E4", "G4"]),
+                    ("F1", ["F3", "A3", "C4", "E4"]), ("G1", ["G3", "B3", "D4", "A4"])]),
+}
+
+
+def piano_score(seconds, mood="piano", seed=7):
+    bpm, prog = PIANO_PROGS[mood]
+    rng = np.random.default_rng(seed)
+    beat = 60 / bpm
+    track = np.zeros(int(SR * (seconds + 4)))
+    t, bar = 0.0, 0
+    while t < seconds:
+        root, tones = prog[bar % len(prog)]
+        place(track, piano_note(hz(root), beat * 4, 0.55), t, 0.9)
+        pattern = [0, 2, 1, 3, 2, 1, 3, 2]
+        for i, k in enumerate(pattern):                    # flowing eighth-note arpeggio
+            place(track, piano_note(hz(tones[k]), beat * 1.6, 0.42 + 0.08 * (i % 2 == 0)), t + i * beat / 2, 0.55)
+        if bar % 2 == 0:                                   # sparse right-hand melody, an octave up
+            for step in (0, 2.5):
+                top = tones[rng.integers(1, len(tones))]
+                up = top[:-1] + str(int(top[-1]) + 1)
+                place(track, piano_note(hz(up), beat * 2.2, 0.5), t + step * beat, 0.5)
+        line = tones[1 if bar % 2 else 2]                  # violin holds a chord tone across the bar
+        place(track, violin_note(hz(line), beat * 4.1, 0.5), t, 0.22)
+        if bar % 4 == 3:
+            place(track, violin_note(hz(tones[3]), beat * 2.0, 0.45), t + beat * 2, 0.18)
+        t += 4 * beat
+        bar += 1
+    track = reverb(track[: int(SR * seconds)])
+    fade = int(SR * 1.6)
+    track[-fade:] *= np.linspace(1, 0, fade)
+    track[: int(SR * 0.5)] *= np.linspace(0, 1, int(SR * 0.5))
     return track / (np.abs(track).max() + 1e-9) * 0.7
 
 

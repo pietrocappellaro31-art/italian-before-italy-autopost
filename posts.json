@@ -2,6 +2,61 @@
   "brand": "italian-before-italy",
   "expected_handle": "italianbeforeitaly",
   "media_base": "https://raw.githubusercontent.com/pietrocappellaro31-art/italian-before-italy-autopost/main/media/",
-  "selftest_image": null,
-  "posts": []
+  "selftest_image": "2026-11-22-r1-cover.jpg",
+  "posts": [
+    {
+      "id": "2026-11-22-r1-coffee",
+      "lesson_id": "IBI-L0001",
+      "type": "reel",
+      "scheduled_utc": "2026-11-22T18:05:00Z",
+      "media": [
+        "2026-11-22-r1.mp4"
+      ],
+      "caption_file": "build/captions/2026-11-22-r1.clean.txt",
+      "cover": "2026-11-22-r1-cover.jpg",
+      "audio_kind": "native_recording",
+      "ai_generated": false,
+      "approval_id": "OWNER-CHAT-2026-11-22-POST-TODAY",
+      "asset_hashes": {
+        "2026-11-22-r1.mp4": "bd54176a50af4a0e4b431137c92576bb57b111e0d9004f327868c9aa4f755aa9",
+        "2026-11-22-r1-cover.jpg": "dd9af30c41cd6e44765e58be539c096caee2ebd00c3338650cca100e08123537",
+        "caption": "d7afbbdf9817faa3a167089475507bd3f4be0059d2deb4be2f6570f392c22f1a"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-22-r2-double-consonants",
+      "lesson_id": "IBI-L0002",
+      "type": "reel",
+      "scheduled_utc": "2026-11-22T23:35:00Z",
+      "media": [
+        "2026-11-22-r2.mp4"
+      ],
+      "caption_file": "build/captions/2026-11-22-r2.clean.txt",
+      "cover": "2026-11-22-r2-cover.jpg",
+      "audio_kind": "native_recording",
+      "ai_generated": false,
+      "approval_id": "OWNER-CHAT-2026-11-22-POST-TODAY",
+      "asset_hashes": {
+        "2026-11-22-r2.mp4": "e15860f493a8406f6bab0dcd468b432c09630e449381cf8d6726ebcec58c6af7",
+        "2026-11-22-r2-cover.jpg": "c13fb7724c6142a5625809a21fc6053436b80f6bf3b0dc4cf6a36ec31769f93a",
+        "caption": "edfaf760f128761e60cee4c151f207eb87b0859af152cc95acec01364b3ee73f"
+      },
+      "requires_published": null,
+      "cap_exempt": "owner asked for two Reels on 22 Nov 2026 in chat",
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    }
+  ]
 }

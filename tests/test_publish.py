@@ -120,6 +120,11 @@ class Scheduling(Base):
         due, _ = publish.select_due(m, NOW)
         self.assertEqual([p["id"] for p in due], ["c1"])
 
+    def test_cap_exempt_second_reel(self):
+        m = manifest(post("r1", "reel", "2026-12-01T17:35:00Z"), post("r2", "reel", "2026-12-01T17:40:00Z", cap_exempt="owner"))
+        due, _ = publish.select_due(m, NOW)
+        self.assertEqual([p["id"] for p in due], ["r1", "r2"])
+
     def test_weekly_cap(self):
         done = [post(f"p{i}", "story", "2026-11-30T12:30:00Z", status="published", published_id=str(i),
                      published_at_utc="2026-11-30T13:00:00+00:00") for i in range(21)]

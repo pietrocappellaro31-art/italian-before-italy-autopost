@@ -274,7 +274,8 @@ def select_due(manifest, now):
         if dep and by_id.get(dep, {}).get("status") != "published":
             log(f"Holding {post['id']}: depends on {dep}, which is not published")
             continue
-        if (day_format[post["type"]] >= MAX_PER_FORMAT_PER_DAY or day_total >= MAX_PER_DAY
+        exempt = bool(post.get("cap_exempt"))            # owner-approved one-off; day and week caps still apply
+        if ((day_format[post["type"]] >= MAX_PER_FORMAT_PER_DAY and not exempt) or day_total >= MAX_PER_DAY
                 or week_total >= MAX_PER_WEEK):
             log(f"Cap reached, holding {post['id']}")
             continue

@@ -5,17 +5,16 @@ A step is ticked only once it has been verified, not merely attempted.
 ## Part 1: setup facts
 - [x] @italianbeforeitaly exists; bio matches the selected bio (checked 21 Nov, public profile, 0 posts)
 - [ ] Display name: live profile shows "Italian Before Italy 🇮🇹" (contract said "Italian Before Italy | Learn Italian"). Left unchanged, owner decides
-- [ ] Account type Business confirmed in app
-- [ ] Facebook Page exists, linked, in Meta Business portfolio
+- [x] Account type Business confirmed by owner (Stories via API require Business)
+- [x] Facebook Page created, linked to @italianbeforeitaly, both in the Italian Before Italy portfolio
 - [x] Repo owner decided: pietrocappellaro31-art
 - [x] Public repo accepted
 - [ ] Final Colosseum logo file received; rights and palette confirmed
 - [ ] Planning/recording times confirmed (proposed Sat 09:30 ET; 18:00 ET daily handoff)
 
 ## Part 2: Meta and GitHub
-- [ ] Owner signed in to GitHub as pietrocappellaro31-art in Chrome
-- [ ] Repo created, scaffold pushed, checks green
-- [ ] Meta business portfolio, app, system user, permissions
+- [x] Repo created under pietrocappellaro31-art, scaffold pushed, checks green
+- [x] Meta portfolio, app (dev mode, 5 permissions ready for testing), system user (Employee) with IBI assets only
 - [ ] IG_ACCESS_TOKEN secret pasted by owner
 - [ ] Selftest run green (publishes nothing)
 
