@@ -594,6 +594,9 @@ def main(argv):
     manifest = load_manifest()
     if "--dryrun" in argv:
         return run_dryrun(manifest, now)
+    if "--selftest" not in argv and os.environ.get("PUBLISH_ENABLED", "false").lower() != "true":
+        log("Publishing is paused (PUBLISH_ENABLED is not true). Nothing touched.")
+        return 0                      # paused scheduled runs stay green and never need the token
     if not os.environ.get("IG_ACCESS_TOKEN"):
         warn("IG_ACCESS_TOKEN is not set")
         return 1
