@@ -52,19 +52,25 @@ def main(argv=None):
     ap.add_argument("--cover")
     ap.add_argument("--audio-kind", default="none")
     ap.add_argument("--requires")
+    ap.add_argument("--at", help="HH:MM Eastern, overrides the format's slot (owner-approved only)")
+    ap.add_argument("--cap-exempt", help="reason, e.g. 'owner approved 2 Reels on 22 Nov in chat'")
     ap.add_argument("--manifest", default=str(REPO / "posts.json"))
     a = ap.parse_args(argv)
 
     manifest_path = pathlib.Path(a.manifest)
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     day = date.fromisoformat(a.date)
-    scheduled = slot_utc(day, a.type)
+    if a.at:
+        hh, mm = map(int, a.at.split(":"))
+        scheduled = datetime.combine(day, time(hh, mm), EASTERN).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    else:
+        scheduled = slot_utc(day, a.type)
 
     for post in manifest["posts"]:
         if post["id"] == a.id:
             sys.exit(f"id {a.id} already exists (status {post['status']}); ids are never reused")
         same_day = datetime.fromisoformat(post["scheduled_utc"].replace("Z", "+00:00")).astimezone(EASTERN).date()
-        if post["type"] == a.type and same_day == day and post["status"] not in ("missed", "rejected"):
+        if post["type"] == a.type and same_day == day and post["status"] not in ("missed", "rejected") and not a.cap_exempt:
             sys.exit(f"{a.type} already planned for {day}: {post['id']}")
 
     hashes = {}
@@ -85,13 +91,13 @@ def main(argv=None):
         "audio_kind": a.audio_kind if a.type == "reel" else "none",
         "ai_generated": a.ai_generated == "true", "approval_id": a.approval,
         "asset_hashes": hashes, "requires_published": a.requires,
-        "status": "approved", "container_id": None, "published_id": None,
+        "cap_exempt": a.cap_exempt, "status": "approved", "container_id": None, "published_id": None,
         "published_at_utc": None, "attempts": 0, "last_error": None,
     }
     manifest["posts"].append(entry)
     manifest["posts"].sort(key=lambda p: p["scheduled_utc"])
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"queued {a.id} for {day} {SLOTS_ET[a.type]:%H:%M} ET = {scheduled}")
+    print(f"queued {a.id} for {day} = {scheduled}")
 
 
 if __name__ == "__main__":
