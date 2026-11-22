@@ -17,6 +17,7 @@ Exit code 0 = all requested posts queued.
 """
 
 import json
+import os
 import pathlib
 import re
 import shutil
@@ -95,6 +96,10 @@ def main(argv):
 
     if "reel" in day:
         r = day["reel"]
+        if any(b.get("vo") for b in r["beats"]) and not (os.environ.get("KOKORO_DIR") and os.environ.get("SHERPA_DIR")):
+            print("WARNING: English narrator not set up; building this Reel without narration")
+            for b in r["beats"]:
+                b.pop("vo", None)
         name = f"{date}-r-{r['id_slug']}"
         problems = lint_caption(r["caption"])
         if problems:
@@ -111,7 +116,8 @@ def main(argv):
         if "h264" not in probe or "aac" not in probe or "width=1080" not in probe:
             raise SystemExit(f"bad reel encode: {probe}")
         run(["python3", BUILD / "schedule.py", "--type", "reel", "--id", name, "--lesson", r["lesson"], "--date", date,
-             "--approval", f"AUTO-{date}", "--ai-generated", "false", "--media", f"{name}.mp4",
+             "--approval", f"AUTO-{date}", "--ai-generated",
+             "true" if any(b.get("vo") for b in r["beats"]) else "false", "--media", f"{name}.mp4",
              "--cover", f"{name}-cover.jpg", "--caption", str(cap.relative_to(REPO)),
              "--audio-kind", "native_recording", "--manifest", manifest])
         queued.append(name)

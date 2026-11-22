@@ -30,6 +30,7 @@ SANS = "/usr/share/fonts/opentype/inter/Inter-Regular.otf"
 SANS_SB = "/usr/share/fonts/opentype/inter/Inter-SemiBold.otf"
 HANDLE = "@italianbeforeitaly"
 CREDIT = "Italian: original native-speaker recording"
+CREDIT_VO = "Italian: native speaker \u00b7 English narration: AI voice"
 M = 90
 _fonts = {}
 
@@ -376,7 +377,8 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             y = words_reveal(d, beat["text"], font(SERIF, 96, 600), M, 880, W - 2 * M, t - 0.6, 0.15, CREAM,
                              (40, 80, 150), center=True)
         if t > 1.3:
-            text_block(d, CREDIT, font(SANS, 34), M, max(y + 40, 1180), W - 2 * M, CREAM, center=True)
+            text_block(d, CREDIT_VO if beat.get("_ai_vo") else CREDIT, font(SANS, 34), M, max(y + 40, 1180),
+                       W - 2 * M, CREAM, center=True)
     d.text((M, 1560), HANDLE, font=font(SANS, 34), fill=fg)
 
 
@@ -413,16 +415,29 @@ def main(argv):
     beats = json.loads(pathlib.Path(argv[1]).read_text())
     clips, out = pathlib.Path(argv[2]), pathlib.Path(argv[3])
     out.mkdir(parents=True, exist_ok=True)
+    import tempfile
+    vo_dir = pathlib.Path(tempfile.mkdtemp())
+    any_vo = any(b.get("vo") for b in beats)
+    if any_vo:
+        sys.path.insert(0, str(pathlib.Path(__file__).parent))
+        import voice
     plan, t = [], 0.0
-    for b in beats:
-        lead = 0.3 if b.get("clip") else 0.0
+    for i, b in enumerate(beats):
+        vo_path, vo_dur = None, 0.0
+        if b.get("vo"):
+            vo_path = voice.narrate(b["vo"], str(vo_dir / f"vo{i}.wav"))
+            vo_dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of",
+                                           "default=nw=1:nk=1", vo_path], capture_output=True, text=True).stdout)
+        if b["kind"] == "cta":
+            b["_ai_vo"] = any_vo
+        lead = (0.3 + (vo_dur + 0.25 if vo_path else 0.0)) if b.get("clip") else 0.0
         env, cd = (clip_env(clip_path(clips, b['clip'])) if b.get("clip") else (None, 0.0))
-        dur = lead + cd + b.get("hold", 0.8) if b.get("clip") else b["seconds"]
+        dur = lead + cd + b.get("hold", 0.8) if b.get("clip") else max(b["seconds"], vo_dur + 0.6)
         if b["kind"] == "quiz":
             b["_clipend"] = lead + cd
             b["_reveal"] = lead + cd + b.get("think", 2.0)
             dur = b["_reveal"] + b.get("after", 2.3)
-        plan.append({"beat": b, "start": t, "dur": dur, "lead": lead, "env": env})
+        plan.append({"beat": b, "start": t, "dur": dur, "lead": lead, "env": env, "vo": vo_path})
         t += dur
     total = t
     n = len(plan)
@@ -465,6 +480,10 @@ def main(argv):
     voice, fx = np.zeros(N), np.zeros(N)
     for x in plan:
         b = x["beat"]
+        if x.get("vo"):
+            raw = subprocess.run(["ffmpeg", "-v", "error", "-i", x["vo"], "-ac", "1", "-ar", str(SR), "-f", "s16le", "-"],
+                                 capture_output=True, check=True).stdout
+            music.place(voice, np.frombuffer(raw, "<i2").astype(float) / 32768 * 0.9, x["start"] + 0.12)
         if b.get("clip"):
             raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(clip_path(clips, b['clip'])), "-ac", "1", "-ar",
                                   str(SR), "-f", "s16le", "-"], capture_output=True, check=True).stdout

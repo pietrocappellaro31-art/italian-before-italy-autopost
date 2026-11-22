@@ -133,11 +133,11 @@
       "caption_file": "build/captions/2026-11-23-r-bar-dialogue.clean.txt",
       "cover": "2026-11-23-r-bar-dialogue-cover.jpg",
       "audio_kind": "native_recording",
-      "ai_generated": false,
+      "ai_generated": true,
       "approval_id": "AUTO-2026-11-23",
       "asset_hashes": {
-        "2026-11-23-r-bar-dialogue.mp4": "8f230b90e45136835725d6dc4d4311e3453682444f81a2145d24df99e06901dc",
-        "2026-11-23-r-bar-dialogue-cover.jpg": "8bf77d81a0ad0568215469c3a30e8fae70d931f372fbd27474fc695c1a5a3650",
+        "2026-11-23-r-bar-dialogue.mp4": "5b4113466077165bcc727d4f00ed56da3d4f5b541fb8585044b9127d4b49bc29",
+        "2026-11-23-r-bar-dialogue-cover.jpg": "a7a5598f25c40291a13711b6ab784ab00f4fe8a92bea49ddcf8e22bab29557f1",
         "caption": "291b17523c32244774d3ff9f49d14c5b4524bb972965b744111d697f90306f27"
       },
       "requires_published": null,
