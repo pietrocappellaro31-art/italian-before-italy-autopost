@@ -1,0 +1,6 @@
+{
+  "name": "italian-before-italy-autopost",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "hostRequirements": { "cpus": 2 },
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg fonts-noto-core && pip install -r requirements.txt"
+}
