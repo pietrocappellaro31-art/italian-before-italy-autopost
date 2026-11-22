@@ -25,7 +25,7 @@
       },
       "requires_published": null,
       "cap_exempt": null,
-      "status": "container_created",
+      "status": "publish_pending",
       "container_id": "17902958454395055",
       "published_id": null,
       "published_at_utc": null,
