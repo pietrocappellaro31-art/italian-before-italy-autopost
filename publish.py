@@ -599,9 +599,36 @@ def run_selftest(manifest):
     return 0
 
 
+def run_day(until_et="13:20", poll=60):
+    """Stay up through the day's slots and publish each item when it is due (cron is unreliable)."""
+    hh, mm = map(int, until_et.split(":"))
+    rc = 0
+    while True:
+        now = datetime.now(timezone.utc)
+        local = now.astimezone(EASTERN)
+        manifest = load_manifest()
+        rc = max(rc, run_publish(manifest, now))
+        today = [p for p in manifest["posts"] if eastern_day(utc(p["scheduled_utc"])) == local.date()]
+        pending = [p for p in today if p.get("status") in ("approved", "retryable_error")]
+        if not pending or (local.hour, local.minute) >= (hh, mm):
+            log(f"Day run finished at {local:%H:%M} ET; {len(pending)} still pending for today.")
+            return rc
+        if os.environ.get("STATE_PUSH") == "1":
+            subprocess.run(["git", "pull", "--rebase", "-q"], cwd=HERE, capture_output=True)
+        time.sleep(poll)
+
+
 def main(argv):
     now = datetime.now(timezone.utc)
     manifest = load_manifest()
+    if "--day" in argv:
+        if not publishing_enabled(manifest):
+            log("Publishing is paused. Nothing touched.")
+            return 0
+        if not os.environ.get("IG_ACCESS_TOKEN"):
+            warn("IG_ACCESS_TOKEN is not set")
+            return 1
+        return run_day(os.environ.get("DAY_UNTIL_ET", "13:20"))
     if "--dryrun" in argv:
         return run_dryrun(manifest, now)
     if "--selftest" not in argv and not publishing_enabled(manifest):

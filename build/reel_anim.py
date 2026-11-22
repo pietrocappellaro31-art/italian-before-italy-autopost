@@ -106,7 +106,8 @@ def sticker(img, text, cx, cy, p, fill=GOLD, color=NAVY, angle=-6, size=40):
     sd.text((24, (h - size * 1.2) / 2), text, font=f, fill=color)
     k = pop(p) * ease(p * 1.6)
     s = s.resize((max(1, int(w * k)), max(1, int(h * k)))).rotate(angle, expand=True, resample=Image.BICUBIC)
-    img.paste(s, (int(cx - s.width / 2), int(cy - s.height / 2)), s)
+    x = int(min(max(cx - s.width / 2, M / 2), img.width - s.width - M / 2))   # always fully on screen
+    img.paste(s, (x, int(cy - s.height / 2)), s)
 
 
 def progress(d, idx, n, p, color, track):
@@ -288,15 +289,20 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             cup(d, W // 2, 1150, (t - 0.3) / 1.6, t, with_face=True, happy=t > 1.8)
         elif beat.get("art") == "pairs":
             f = font(SERIF, 130, 600)
-            for k, (wd, xx) in enumerate((("pala", 230), ("palla", 640))):
+            pw = beat.get("pair_words", ["pala", "palla"])
+            pf = font(SERIF, 130, 600)
+            while max(d.textlength(w, font=pf) for w in pw) > 330 and pf.size > 60:
+                pf = font(SERIF, pf.size - 8, 600)
+            f = pf
+            for k, (wd, xx) in enumerate(((pw[0], 230), (pw[1], 640))):
                 q = ease((t - 0.4 - 0.3 * k) * 2.5)
                 if q > 0:
                     d.rounded_rectangle([xx - 170, 1040 - 90 * q, xx + 210, 1250], radius=28, fill=WHITE)
                     double_highlight(d, wd, f, xx - 130, 1080, BLUE, (176, 106, 0))
-            sticker(img, "same letters?", W // 2, 1340, (t - 1.2) / 0.5, angle=4)
+            sticker(img, beat.get("pair_sticker", "hear the difference?"), W // 2, 1340, (t - 1.2) / 0.5, angle=4)
     elif kind in ("listen", "turn"):
         tag(d, beat.get("label", "Listen" if kind == "listen" else "Your turn"), t / 0.4, BLUE, CREAM)
-        f = font(SERIF, 96, 600)
+        f = font(SERIF, 96 if len(beat["it"]) < 40 else 78, 600)
         k = ease(t / 0.35)
         y = 520 + (1 - k) * 60
         y = text_block(d, beat["it"], f, M, y, W - 2 * M, BLUE if k > 0.3 else RULE)
@@ -324,6 +330,8 @@ def draw_beat(beat, t, dur, idx, n, level, img):
     elif kind == "pair":
         tag(d, beat.get("label", "Listen"), t / 0.4, BLUE, CREAM)
         f = font(SERIF, 150, 600)
+        while d.textlength(beat["word"], font=f) > W - 2 * M - 60 and f.size > 60:
+            f = font(SERIF, f.size - 8, 600)
         k = ease(t / 0.3)
         d.rounded_rectangle([M, 420 + (1 - k) * 80, W - M, 760], radius=32, fill=WHITE)
         double_highlight(d, beat["word"], f, (W - d.textlength(beat["word"], font=f)) / 2, 500, BLUE, (176, 106, 0))
@@ -363,12 +371,22 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             confetti(d, W // 2, 800, (t - reveal) / 1.2)
     elif kind == "cta":
         arch(d, W // 2, 760, 110, t / 0.9, CREAM)
+        y = 880
         if t > 0.6:
-            words_reveal(d, beat["text"], font(SERIF, 96, 600), M, 880, W - 2 * M, t - 0.6, 0.15, CREAM,
-                         (40, 80, 150), center=True)
+            y = words_reveal(d, beat["text"], font(SERIF, 96, 600), M, 880, W - 2 * M, t - 0.6, 0.15, CREAM,
+                             (40, 80, 150), center=True)
         if t > 1.3:
-            text_block(d, CREDIT, font(SANS, 34), M, 1180, W - 2 * M, CREAM, center=True)
+            text_block(d, CREDIT, font(SANS, 34), M, max(y + 40, 1180), W - 2 * M, CREAM, center=True)
     d.text((M, 1560), HANDLE, font=font(SANS, 34), fill=fg)
+
+
+def clip_path(clips, cid):
+    """Approved clips may be WAV (local) or FLAC (private repo)."""
+    for ext in (".wav", ".flac"):
+        p = clips / f"{cid}{ext}"
+        if p.exists():
+            return p
+    raise FileNotFoundError(f"AUDIO_NEEDED: no approved clip {cid} in {clips}")
 
 
 def clip_env(path):
@@ -398,7 +416,7 @@ def main(argv):
     plan, t = [], 0.0
     for b in beats:
         lead = 0.3 if b.get("clip") else 0.0
-        env, cd = (clip_env(clips / f"{b['clip']}.wav") if b.get("clip") else (None, 0.0))
+        env, cd = (clip_env(clip_path(clips, b['clip'])) if b.get("clip") else (None, 0.0))
         dur = lead + cd + b.get("hold", 0.8) if b.get("clip") else b["seconds"]
         if b["kind"] == "quiz":
             b["_clipend"] = lead + cd
@@ -448,7 +466,7 @@ def main(argv):
     for x in plan:
         b = x["beat"]
         if b.get("clip"):
-            raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(clips / f"{b['clip']}.wav"), "-ac", "1", "-ar",
+            raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(clip_path(clips, b['clip'])), "-ac", "1", "-ar",
                                   str(SR), "-f", "s16le", "-"], capture_output=True, check=True).stdout
             music.place(voice, np.frombuffer(raw, "<i2").astype(float) / 32768, x["start"] + x["lead"])
         events = []

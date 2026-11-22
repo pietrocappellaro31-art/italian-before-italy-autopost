@@ -58,6 +58,96 @@
       "published_at_utc": null,
       "attempts": 0,
       "last_error": null
+    },
+    {
+      "id": "2026-11-23-s-quiz-sette",
+      "lesson_id": "IBI-L0003",
+      "type": "story",
+      "scheduled_utc": "2026-11-23T12:30:00Z",
+      "media": [
+        "2026-11-23-s-quiz-sette.jpg"
+      ],
+      "caption_file": null,
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-23",
+      "asset_hashes": {
+        "2026-11-23-s-quiz-sette.jpg": "3743ba4b3cf1cbcbef48ea4d59d93e5b3bb614e6c5a480e0cf13025781e4095d"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-23-c-cafe-phrases",
+      "lesson_id": "IBI-L0004",
+      "type": "carousel",
+      "scheduled_utc": "2026-11-23T13:10:00Z",
+      "media": [
+        "2026-11-23-c-cafe-phrases-01.jpg",
+        "2026-11-23-c-cafe-phrases-02.jpg",
+        "2026-11-23-c-cafe-phrases-03.jpg",
+        "2026-11-23-c-cafe-phrases-04.jpg",
+        "2026-11-23-c-cafe-phrases-05.jpg",
+        "2026-11-23-c-cafe-phrases-06.jpg",
+        "2026-11-23-c-cafe-phrases-07.jpg"
+      ],
+      "caption_file": "build/captions/2026-11-23-c-cafe-phrases.clean.txt",
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-23",
+      "asset_hashes": {
+        "2026-11-23-c-cafe-phrases-01.jpg": "953376b50803e27aea616c3660fbfb931df9ca0a10a68b28a31e967ba219d53a",
+        "2026-11-23-c-cafe-phrases-02.jpg": "ba85a4910ea2e69691d3ada4a85f51d2b438edfc79b1d4c2db2f5af23ef710ef",
+        "2026-11-23-c-cafe-phrases-03.jpg": "c4af71f00988e5e826dbf4c4b20522f77a8f05b6689c6dc87d273522664ddcb9",
+        "2026-11-23-c-cafe-phrases-04.jpg": "332204d6fc9de871af6b8d9517927cbe9bf8abc52eb386eeb816f533f8b76fc9",
+        "2026-11-23-c-cafe-phrases-05.jpg": "aa2880964d0aea06dc97d801bf54f65e86cb2e65f56380485514e90c91e2db8c",
+        "2026-11-23-c-cafe-phrases-06.jpg": "52db45579e7750218af3986e40d46b327f56786b3e7ee4fa6780e3468e4bcd20",
+        "2026-11-23-c-cafe-phrases-07.jpg": "2a8834b2fc253c2f6cd1af8a2bc3ccc4b7a7f8c8b684130fff3e0e7e97effce1",
+        "caption": "18f1146b8ff7f666726740303211dae16fe980138b49df5f3cead8c87fae37db"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-23-r-bar-dialogue",
+      "lesson_id": "IBI-L0005",
+      "type": "reel",
+      "scheduled_utc": "2026-11-23T17:35:00Z",
+      "media": [
+        "2026-11-23-r-bar-dialogue.mp4"
+      ],
+      "caption_file": "build/captions/2026-11-23-r-bar-dialogue.clean.txt",
+      "cover": "2026-11-23-r-bar-dialogue-cover.jpg",
+      "audio_kind": "native_recording",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-23",
+      "asset_hashes": {
+        "2026-11-23-r-bar-dialogue.mp4": "8f230b90e45136835725d6dc4d4311e3453682444f81a2145d24df99e06901dc",
+        "2026-11-23-r-bar-dialogue-cover.jpg": "8bf77d81a0ad0568215469c3a30e8fae70d931f372fbd27474fc695c1a5a3650",
+        "caption": "291b17523c32244774d3ff9f49d14c5b4524bb972965b744111d697f90306f27"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
     }
   ]
 }

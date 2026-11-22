@@ -19,10 +19,10 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "dryrun = validate only, no network; selftest = identity + one unpublished container; publish = publish what is due"
+        description: "dryrun = validate only; selftest = identity + one unpublished container; publish = publish what is due now; day = stay up and publish each slot until 13:20 ET"
         type: choice
         default: dryrun
-        options: [dryrun, selftest, publish]
+        options: [dryrun, selftest, publish, day]
 
 permissions:
   contents: write     # only to commit publishing state back to posts.json
@@ -34,7 +34,7 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 350
     env:
       IG_EXPECTED_HANDLE: italianbeforeitaly
       META_API_VERSION: ${{ vars.META_API_VERSION }}
@@ -57,6 +57,16 @@ jobs:
         env:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
         run: python publish.py --selftest
+
+      - name: Publishing day (Story 07:30, carousel 08:10, Reel 12:35 ET)
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'day'
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          STATE_PUSH: "1"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python publish.py --day
 
       - name: Publish what is due
         if: github.event_name == 'schedule' || inputs.mode == 'publish'
