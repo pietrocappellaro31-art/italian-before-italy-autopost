@@ -1,0 +1,69 @@
+name: IBI publish
+
+# Publishes approved, due posts from posts.json to @italianbeforeitaly.
+# Scheduled runs do nothing unless the repo variable PUBLISH_ENABLED is "true".
+#
+# Slots (America/New_York): Story 07:30, Carousel 08:10, Reel 12:35.
+# Cron is UTC and GitHub may delay or drop scheduled runs (the sister repo measured
+# gaps of up to 10 hours), so runs are concentrated in windows that cover each slot in
+# both EST (UTC-5) and EDT (UTC-4), plus a light sweep. publish.py's own caps and
+# grace window make an extra or late run harmless.
+on:
+  schedule:
+    - cron: "34,44,54 11 * * *"        # Story 07:30 EDT/EST windows
+    - cron: "4,14,24,34,44,54 12 * * *"
+    - cron: "14,24,34 13 * * *"        # Carousel 08:10 EST
+    - cron: "39,49,59 16 * * *"        # Reel 12:35 EDT
+    - cron: "9,19,29,39,49,59 17 * * *" # Reel 12:35 EST
+    - cron: "17 14,19,22 * * *"        # sweep
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "dryrun = validate only, no network; selftest = identity + one unpublished container; publish = publish what is due"
+        type: choice
+        default: dryrun
+        options: [dryrun, selftest, publish]
+
+permissions:
+  contents: write     # only to commit publishing state back to posts.json
+
+concurrency:
+  group: ibi-instagram-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      IG_EXPECTED_HANDLE: italianbeforeitaly
+      META_API_VERSION: ${{ vars.META_API_VERSION }}
+      IG_USER_ID: ${{ vars.IG_USER_ID }}
+      PUBLISH_ENABLED: ${{ vars.PUBLISH_ENABLED }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Dry run (no network, no token)
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'dryrun'
+        run: python publish.py --dryrun
+
+      - name: Self-test (publishes nothing)
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'selftest'
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: python publish.py --selftest
+
+      - name: Publish what is due
+        if: github.event_name == 'schedule' || inputs.mode == 'publish'
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          STATE_PUSH: "1"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python publish.py

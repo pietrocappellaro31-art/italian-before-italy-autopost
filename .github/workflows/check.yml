@@ -1,0 +1,25 @@
+name: IBI checks
+
+# Unit tests and the public-repo safety scan. No secrets are available here.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Public-repo safety scan
+        run: python build/verify_public.py
+      - name: Unit tests (offline)
+        run: python -m unittest discover -s tests -v
+      - name: Manifest dry run
+        run: python publish.py --dryrun
