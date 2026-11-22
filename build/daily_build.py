@@ -51,6 +51,41 @@ def lint_caption(text):
     return problems
 
 
+def lint_reel_standard(r):
+    """House standard for every Reel (owner decisions 22 Nov 2026). Returns a list of problems."""
+    sys.path.insert(0, str(BUILD))
+    import icons
+    import voice
+    beats, problems = r["beats"], []
+    if not beats or beats[0]["kind"] != "hook" or beats[-1]["kind"] != "cta":
+        problems.append("Reel must start with a hook and end with a cta")
+    hook = beats[0] if beats else {}
+    if "Pietro" not in (hook.get("sub", "") + hook.get("vo", "")):
+        problems.append("hook must name the voice: 'Pietro, a native speaker' (sub or vo)")
+    if "Pietro" not in r.get("caption", ""):
+        problems.append("Reel caption must say it is voiced by Pietro, a native speaker")
+    for i, b in enumerate(beats):
+        if b["kind"] in ("hook", "listen", "meaning", "pair") and not b.get("pics") and not b.get("art"):
+            problems.append(f"beat {i} ({b['kind']}) has no pics")
+        for nm in b.get("pics", []) + b.get("option_icons", []):
+            if nm not in icons.ICONS:
+                problems.append(f"beat {i}: unknown picture '{nm}'")
+        if b.get("option_icons") and len(b["option_icons"]) != len(b.get("options", [])):
+            problems.append(f"beat {i}: option_icons must match options")
+        if b["kind"] in ("hook", "quiz", "turn", "cta") and not b.get("vo"):
+            problems.append(f"beat {i} ({b['kind']}) has no English narration (vo)")
+        if b.get("vo"):
+            try:
+                voice.check_english(b["vo"])
+            except voice.ItalianInNarration as e:
+                problems.append(f"beat {i}: {e}")
+        if not b.get("particles"):
+            problems.append(f"beat {i} has no particles")
+    if not any(b["kind"] == "quiz" for b in beats):
+        problems.append("Reel needs at least one quiz")
+    return problems
+
+
 def run(cmd):
     out = subprocess.run(cmd, cwd=REPO, capture_output=True, text=True)
     if out.returncode:
@@ -96,6 +131,9 @@ def main(argv):
 
     if "reel" in day:
         r = day["reel"]
+        std = lint_reel_standard(r)
+        if std:
+            raise SystemExit("Reel standard not met:\n  " + "\n  ".join(std))
         if any(b.get("vo") for b in r["beats"]) and not (os.environ.get("KOKORO_DIR") and os.environ.get("SHERPA_DIR")):
             print("WARNING: English narrator not set up; building this Reel without narration")
             for b in r["beats"]:
