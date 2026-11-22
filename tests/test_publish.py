@@ -159,6 +159,16 @@ class Publishing(Base):
         self.assertEqual(graph.calls, [])
         self.assertEqual(m["posts"][0]["status"], "approved")
 
+    def test_switch_from_manifest(self):
+        os.environ["PUBLISH_ENABLED"] = ""
+        m = manifest(post("c", "carousel", "2026-12-01T13:10:00Z"))
+        graph = FakeGraph()
+        self.run_publish(m, graph)
+        self.assertEqual(graph.calls, [])                 # flag absent -> paused
+        m["publishing_enabled"] = True
+        self.run_publish(m, FakeGraph())
+        self.assertEqual(m["posts"][0]["status"], "published")
+
     def test_happy_path_all_formats(self):
         m = manifest(post("s", "story", "2026-12-01T12:30:00Z"), post("c", "carousel", "2026-12-01T13:10:00Z"),
                      post("r", "reel", "2026-12-01T17:35:00Z"))

@@ -2,6 +2,7 @@
   "brand": "italian-before-italy",
   "expected_handle": "italianbeforeitaly",
   "media_base": "https://raw.githubusercontent.com/pietrocappellaro31-art/italian-before-italy-autopost/main/media/",
+  "publishing_enabled": true,
   "selftest_image": "2026-11-22-r1-cover.jpg",
   "posts": [
     {

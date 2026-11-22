@@ -73,6 +73,15 @@ STOP_MARKERS = ("API access blocked", "5258005", "temporarily blocked", "unusual
                 '"code":368', '"code":4,', '"code":17,', '"code":32,', '"code":613', '"code":190')
 
 
+def publishing_enabled(manifest):
+    """Switch: repo variable PUBLISH_ENABLED overrides when set; otherwise posts.json "publishing_enabled".
+    Kept in the repo so scheduled cloud sessions can pause or resume publishing with a normal git push."""
+    env = os.environ.get("PUBLISH_ENABLED", "").strip().lower()
+    if env in ("true", "false"):
+        return env == "true"
+    return manifest.get("publishing_enabled") is True
+
+
 class StopRun(Exception):
     """Something a person must resolve: identity, auth, block, rate limit."""
 
@@ -490,8 +499,8 @@ def run_dryrun(manifest, now):
 
 def run_publish(manifest, now, persist_fn=None):
     persist_fn = persist_fn or (lambda msg: persist(manifest, msg))
-    if os.environ.get("PUBLISH_ENABLED", "false").lower() != "true":
-        log("Publishing is paused (PUBLISH_ENABLED is not true). Nothing touched.")
+    if not publishing_enabled(manifest):
+        log("Publishing is paused. Nothing touched.")
         return 0
     problems = validate_manifest(manifest)
     if problems:
@@ -595,8 +604,8 @@ def main(argv):
     manifest = load_manifest()
     if "--dryrun" in argv:
         return run_dryrun(manifest, now)
-    if "--selftest" not in argv and os.environ.get("PUBLISH_ENABLED", "false").lower() != "true":
-        log("Publishing is paused (PUBLISH_ENABLED is not true). Nothing touched.")
+    if "--selftest" not in argv and not publishing_enabled(manifest):
+        log("Publishing is paused. Nothing touched.")
         return 0                      # paused scheduled runs stay green and never need the token
     if not os.environ.get("IG_ACCESS_TOKEN"):
         warn("IG_ACCESS_TOKEN is not set")
