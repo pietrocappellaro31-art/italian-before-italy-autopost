@@ -29,8 +29,24 @@ SERIF = "/usr/share/fonts/truetype/google-fonts/Lora-Variable.ttf"
 SANS = "/usr/share/fonts/opentype/inter/Inter-Regular.otf"
 SANS_SB = "/usr/share/fonts/opentype/inter/Inter-SemiBold.otf"
 HANDLE = "@italianbeforeitaly"
-CREDIT = "Italian: original native-speaker recording"
-CREDIT_VO = "Italian: native speaker \u00b7 English narration: AI voice"
+CREDIT = "Italian: Pietro, native speaker (original recording)"
+CREDIT_VO = "Italian: Pietro, native speaker \u00b7 English narration: AI voice"
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+import icons  # noqa: E402
+
+AVATARS = {"barista": "barista", "you": "you", "waiter": "waiter", "cameriere": "waiter", "clerk": "clerk",
+           "ticket office": "clerk", "pharmacist": "pharmacist", "farmacista": "pharmacist"}
+
+
+def speaker_avatar(label):
+    return AVATARS.get((label or "").strip().lower(), "friend")
+
+
+def pics_row(img, names, cx, cy, size, t, start=0.3, gap=None):
+    gap = gap or size + 40
+    x0 = cx - gap * (len(names) - 1) / 2
+    for k, nm in enumerate(names):
+        icons.paste_icon(img, nm, x0 + k * gap, cy, size, (t - start - 0.18 * k) / 0.45, t)
 M = 90
 _fonts = {}
 
@@ -301,6 +317,8 @@ def draw_beat(beat, t, dur, idx, n, level, img):
                     d.rounded_rectangle([xx - 170, 1040 - 90 * q, xx + 210, 1250], radius=28, fill=WHITE)
                     double_highlight(d, wd, f, xx - 130, 1080, BLUE, (176, 106, 0))
             sticker(img, beat.get("pair_sticker", "hear the difference?"), W // 2, 1340, (t - 1.2) / 0.5, angle=4)
+        elif beat.get("pics"):
+            pics_row(img, beat["pics"][:3], W // 2, 1180, 260 if len(beat["pics"]) < 3 else 220, t, 0.5)
     elif kind in ("listen", "turn"):
         tag(d, beat.get("label", "Listen" if kind == "listen" else "Your turn"), t / 0.4, BLUE, CREAM)
         f = font(SERIF, 96 if len(beat["it"]) < 40 else 78, 600)
@@ -311,10 +329,22 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             wave(d, level, W // 2, y + 170, t, BLUE)
             if beat.get("sticker"):
                 sticker(img, beat["sticker"], W - 260, y + 330, (t - 0.6) / 0.5)
+            who = speaker_avatar(beat.get("label"))
+            right = who == "you"
+            ay = min(max(1310, y + 520), 1400)
+            asz = 290 if ay <= 1310 else 240
+            if beat.get("label"):
+                icons.avatar(img, who, W - 220 if right else 220, ay, asz, t / 0.35, t, talking=level > 0.25 and
+                             int(t * 9) % 2 == 0)
+            pics = beat.get("pics", [])[:2]
+            if pics:
+                pics_row(img, pics, 330 if right else W - 330, ay, 190 if asz == 290 else 160, t, 0.5)
         else:
             frac = 1 - min(t / dur, 1)
             ring(d, W // 2, y + 240, frac, BLUE, RULE)
             text_block(d, "Say it out loud", font(SANS_SB, 44), M, y + 410, W - 2 * M, NAVY, center=True)
+            icons.avatar(img, "you", 260, 1330, 260, t / 0.35, t, talking=int(t * 4) % 2 == 0)
+            icons.paste_icon(img, "mouth", W - 260, 1330, 210, (t - 0.3) / 0.4, t, wiggle=True)
     elif kind == "meaning":
         tag(d, "What it means", t / 0.4, BLUE, CREAM)
         y = text_block(d, beat["it"], font(SERIF, 72, 600), M, 330, W - 2 * M, BLUE)
@@ -325,6 +355,8 @@ def draw_beat(beat, t, dur, idx, n, level, img):
         elif beat.get("art") == "cup+cornetto":
             cup(d, 300, y + 330, (t - 0.2) / 1.2, t)
             cornetto(d, 760, y + 330, (t - 0.8) / 0.8)
+        elif beat.get("pics"):
+            pics_row(img, beat["pics"][:3], W // 2, min(y + 300, 1300), 220, t, 0.6)
         for s in beat.get("stickers", []):
             sticker(img, s["text"], s.get("x", 760), y + s.get("dy", 220), (t - s.get("at", 1.2)) / 0.45,
                     angle=s.get("angle", -6))
@@ -340,6 +372,8 @@ def draw_beat(beat, t, dur, idx, n, level, img):
         wave(d, level, W // 2, 1060, t, BLUE)
         if beat.get("sticker"):
             sticker(img, beat["sticker"], W // 2, 1260, (t - 0.5) / 0.45, angle=beat.get("angle", -5))
+        if beat.get("pics"):
+            pics_row(img, beat["pics"][:2], W // 2, 1420, 150, t, 0.4)
     elif kind == "quiz":
         tag(d, "Quiz", t / 0.4, GOLD, NAVY)
         text_block(d, beat["q"], font(SERIF, 76, 600), M, 300, W - 2 * M, BLUE)
@@ -349,6 +383,9 @@ def draw_beat(beat, t, dur, idx, n, level, img):
         size = 104
         while size > 48 and max(d.textlength(o, font=font(SERIF, size, 600)) for o in opts) > card_w - 50:
             size -= 4
+        oi = beat.get("option_icons")
+        if oi:
+            size = min(size, 64)
         f = font(SERIF, size, 600)
         for k, word in enumerate(opts):
             x0 = M + k * ((W - 2 * M) // 2 + 15)
@@ -360,9 +397,17 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             fill = BLUE if (done and right) else WHITE
             col = CREAM if (done and right) else (RULE if done else BLUE)
             d.rounded_rectangle([x0, y0, x1, y0 + 300], radius=30, fill=fill, outline=BLUE if not done else fill, width=4)
-            d.text((x0 + (x1 - x0 - d.textlength(word, font=f)) / 2, y0 + 150 - size * 0.6), word, font=f, fill=col)
+            ty = y0 + (225 if oi else 150) - size * 0.6
+            d.text((x0 + (x1 - x0 - d.textlength(word, font=f)) / 2, ty), word, font=f, fill=col)
+            if oi:
+                icons.paste_icon(img, oi[k], (x0 + x1) / 2, y0 + 100, 140, q, t, bob=4 if not done else 0)
             if done and right:
-                check(d, (x0 + x1) / 2, y0 + 250, 26 * ease((t - reveal) / 0.3), GOLD, 10)
+                check(d, x1 - 45 if oi else (x0 + x1) / 2, y0 + 45 if oi else y0 + 250, 26 * ease((t - reveal) / 0.3), GOLD, 10)
+                h = ease((t - reveal) / 0.45)
+                tx, tyy = (x0 + x1) / 2 + 110, y0 + 360
+                press = 1 - 0.12 * max(0, math.sin(min(max(t - reveal - 0.45, 0) * 8, math.pi)))
+                icons.paste_icon(img, "wave_hand", tx + (1 - h) * 200, tyy + (1 - h) * 400, int(150 * press), 1, t,
+                                 bob=0)
         if t < beat["_clipend"]:
             wave(d, level, W // 2, 1080, t, BLUE)
         elif t < reveal:
