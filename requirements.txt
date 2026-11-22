@@ -1,0 +1,2 @@
+# publish.py uses only the Python standard library.
+# Rendering (added in Part 7) will pin its packages here, e.g. Pillow==12.0.0.

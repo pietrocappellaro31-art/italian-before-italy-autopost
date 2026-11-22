@@ -1,0 +1,17 @@
+# Never committed: secrets, private audio, drafts, approvals, logs, caches
+.env
+.env.*
+*.m4a
+*.wav
+*.mp3
+*.aac
+*.caf
+*.flac
+private/
+renders/
+approvals/
+logs/
+build/out/
+__pycache__/
+*.pyc
+posts.json.tmp
