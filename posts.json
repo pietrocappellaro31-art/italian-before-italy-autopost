@@ -53,10 +53,10 @@
       },
       "requires_published": null,
       "cap_exempt": "owner asked for two Reels on 22 Nov 2026 in chat",
-      "status": "publish_pending",
+      "status": "published",
       "container_id": "17903000055395055",
-      "published_id": null,
-      "published_at_utc": null,
+      "published_id": "17911361787605389",
+      "published_at_utc": "2026-11-22T23:39:50+00:00",
       "attempts": 1,
       "last_error": null,
       "last_attempt_utc": "2026-11-22T23:37:52+00:00"
