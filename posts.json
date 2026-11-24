@@ -153,6 +153,96 @@
       "attempts": 1,
       "last_error": null,
       "last_attempt_utc": "2026-11-23T17:38:56+00:00"
+    },
+    {
+      "id": "2026-11-24-s-quiz-costano",
+      "lesson_id": "IBI-L0006",
+      "type": "story",
+      "scheduled_utc": "2026-11-24T12:30:00Z",
+      "media": [
+        "2026-11-24-s-quiz-costano.jpg"
+      ],
+      "caption_file": null,
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-24",
+      "asset_hashes": {
+        "2026-11-24-s-quiz-costano.jpg": "ae1a89e55b76d498ed1336943cfcbfb499691ce31282d48cec0231f0bd994087"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-24-c-asking-the-price",
+      "lesson_id": "IBI-L0007",
+      "type": "carousel",
+      "scheduled_utc": "2026-11-24T13:10:00Z",
+      "media": [
+        "2026-11-24-c-asking-the-price-01.jpg",
+        "2026-11-24-c-asking-the-price-02.jpg",
+        "2026-11-24-c-asking-the-price-03.jpg",
+        "2026-11-24-c-asking-the-price-04.jpg",
+        "2026-11-24-c-asking-the-price-05.jpg",
+        "2026-11-24-c-asking-the-price-06.jpg",
+        "2026-11-24-c-asking-the-price-07.jpg"
+      ],
+      "caption_file": "build/captions/2026-11-24-c-asking-the-price.clean.txt",
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-24",
+      "asset_hashes": {
+        "2026-11-24-c-asking-the-price-01.jpg": "5b81ca6b033e5c89db2cc5ba9813c634c466f6ee60702c72b37f9b66ab3704b7",
+        "2026-11-24-c-asking-the-price-02.jpg": "6b9f356c6e7d169229d9fd87973fad0e3ab93a44b50a16dbe65758b4eb6b2b54",
+        "2026-11-24-c-asking-the-price-03.jpg": "d08f54b5c068842c23a21a9731978cb8cbdb5b3169fa0770e140da9cae162590",
+        "2026-11-24-c-asking-the-price-04.jpg": "aefa216bb40fa3641de9d3d76a634ec3b0d067617cdeb494c2e5e39cf39885a7",
+        "2026-11-24-c-asking-the-price-05.jpg": "a851f8eb4eefb2c97db8eff1a460c0b832ccec2576fb59dbfd33189be6ecb9b2",
+        "2026-11-24-c-asking-the-price-06.jpg": "19b146dcbf703e11eda4f5e85b9b31e567b93d019cc6a2184b56f61e68abe93e",
+        "2026-11-24-c-asking-the-price-07.jpg": "358ede870d0c74b7264f6f6b5488b5f18a0c48f69afd5398acb11bebb2541e77",
+        "caption": "2c2bb5c0fa05396e02c03286a8efc6114633be4fc6f7b16aedc1514e7228c32d"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-24-r-asking-the-price",
+      "lesson_id": "IBI-L0008",
+      "type": "reel",
+      "scheduled_utc": "2026-11-24T17:35:00Z",
+      "media": [
+        "2026-11-24-r-asking-the-price.mp4"
+      ],
+      "caption_file": "build/captions/2026-11-24-r-asking-the-price.clean.txt",
+      "cover": "2026-11-24-r-asking-the-price-cover.jpg",
+      "audio_kind": "native_recording",
+      "ai_generated": true,
+      "approval_id": "AUTO-2026-11-24",
+      "asset_hashes": {
+        "2026-11-24-r-asking-the-price.mp4": "3f5750655337c744e0c01b604f8c73def2cd14b0c072c88fc0360c07dbf227f9",
+        "2026-11-24-r-asking-the-price-cover.jpg": "1df24c10396f945948cb670d3eead3ee06dbb9399c3d925a5bf37db79de8ec32",
+        "caption": "5197136baf5690a8291384536253e71bfe104357f9c0db81ee9a5a6ece1769ca"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
     }
   ]
 }
