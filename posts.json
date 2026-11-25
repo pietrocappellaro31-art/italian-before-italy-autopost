@@ -246,6 +246,98 @@
       "attempts": 1,
       "last_error": null,
       "last_attempt_utc": "2026-11-24T17:38:44+00:00"
+    },
+    {
+      "id": "2026-11-25-s-quiz-chiesa",
+      "lesson_id": "IBI-L0009",
+      "type": "story",
+      "scheduled_utc": "2026-11-25T12:30:00Z",
+      "media": [
+        "2026-11-25-s-quiz-chiesa.jpg"
+      ],
+      "caption_file": null,
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-25",
+      "asset_hashes": {
+        "2026-11-25-s-quiz-chiesa.jpg": "862273c2023f56f1cf986bb309f3d44bda2da62341ffa3da4e1d9e41c4e0b45e"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-25-c-c-and-ch",
+      "lesson_id": "IBI-L0010",
+      "type": "carousel",
+      "scheduled_utc": "2026-11-25T13:10:00Z",
+      "media": [
+        "2026-11-25-c-c-and-ch-01.jpg",
+        "2026-11-25-c-c-and-ch-02.jpg",
+        "2026-11-25-c-c-and-ch-03.jpg",
+        "2026-11-25-c-c-and-ch-04.jpg",
+        "2026-11-25-c-c-and-ch-05.jpg",
+        "2026-11-25-c-c-and-ch-06.jpg",
+        "2026-11-25-c-c-and-ch-07.jpg",
+        "2026-11-25-c-c-and-ch-08.jpg"
+      ],
+      "caption_file": "build/captions/2026-11-25-c-c-and-ch.clean.txt",
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-25",
+      "asset_hashes": {
+        "2026-11-25-c-c-and-ch-01.jpg": "cef89f7ca8fe9ab4b7fba2b0600171b001ca1676b87d34bcf6e50073797c4cdd",
+        "2026-11-25-c-c-and-ch-02.jpg": "d5d5095ab34a01727cd26d67d9a7fa4349356d2982d1096431d2150ac1be13c8",
+        "2026-11-25-c-c-and-ch-03.jpg": "651dc280489e478a750cf0c5d18b110e2f79bf6c840ee1ff58b67ef72ef4b050",
+        "2026-11-25-c-c-and-ch-04.jpg": "4b9d9fcd7b0722abba42f244acf03986405db5cc97e80ea9f2c5bdf437569418",
+        "2026-11-25-c-c-and-ch-05.jpg": "5bfb622e03f155d8c581acafe3a3dda540b9b88592df5fea084a426de19b8335",
+        "2026-11-25-c-c-and-ch-06.jpg": "b4aaf9b919db0763b15069143af91bd0b53ac0c549204353a52177f27b5f0329",
+        "2026-11-25-c-c-and-ch-07.jpg": "8c496c85f54b69ef1f27573b53244d719a6ade995097d2b7a473d971f93d973d",
+        "2026-11-25-c-c-and-ch-08.jpg": "076354475e26aa0d4276370471b687cf0e288f9d6887bc1f62e18b3f8958370e",
+        "caption": "4918f1ec597725fd820400b32184cfb82c3454a858a34505a97d949448f79145"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-25-r-c-and-ch",
+      "lesson_id": "IBI-L0011",
+      "type": "reel",
+      "scheduled_utc": "2026-11-25T17:35:00Z",
+      "media": [
+        "2026-11-25-r-c-and-ch.mp4"
+      ],
+      "caption_file": "build/captions/2026-11-25-r-c-and-ch.clean.txt",
+      "cover": "2026-11-25-r-c-and-ch-cover.jpg",
+      "audio_kind": "native_recording",
+      "ai_generated": true,
+      "approval_id": "AUTO-2026-11-25",
+      "asset_hashes": {
+        "2026-11-25-r-c-and-ch.mp4": "40a7ef3ac18cbe96e00a7be05fe80cf3439f5f08b0bbee85fa51b2f8051d91b0",
+        "2026-11-25-r-c-and-ch-cover.jpg": "4b94e8e103493797a170ad99749728df35051d40cf123baea0ade4bb41807953",
+        "caption": "a90377dd52ee789de6e19cd02492be6962679a5b21f5aaa4d2e80e2e9b0b9de1"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
     }
   ]
 }
