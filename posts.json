@@ -265,10 +265,10 @@
       },
       "requires_published": null,
       "cap_exempt": null,
-      "status": "publish_pending",
+      "status": "published",
       "container_id": "17903548899395055",
-      "published_id": null,
-      "published_at_utc": null,
+      "published_id": "17940566283407713",
+      "published_at_utc": "2026-11-25T12:39:03+00:00",
       "attempts": 1,
       "last_error": null,
       "last_attempt_utc": "2026-11-25T12:38:53+00:00"
