@@ -427,12 +427,13 @@
       },
       "requires_published": null,
       "cap_exempt": null,
-      "status": "approved",
-      "container_id": null,
+      "status": "container_created",
+      "container_id": "17903835378395055",
       "published_id": null,
       "published_at_utc": null,
-      "attempts": 0,
-      "last_error": null
+      "attempts": 1,
+      "last_error": null,
+      "last_attempt_utc": "2026-11-26T17:39:25+00:00"
     }
   ]
 }
