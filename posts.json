@@ -341,6 +341,96 @@
       "attempts": 1,
       "last_error": null,
       "last_attempt_utc": "2026-11-25T17:39:02+00:00"
+    },
+    {
+      "id": "2026-11-26-s-quiz-come-sta",
+      "lesson_id": "IBI-L0012",
+      "type": "story",
+      "scheduled_utc": "2026-11-26T12:30:00Z",
+      "media": [
+        "2026-11-26-s-quiz-come-sta.jpg"
+      ],
+      "caption_file": null,
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-26",
+      "asset_hashes": {
+        "2026-11-26-s-quiz-come-sta.jpg": "a9a801ec7b93a9a66ad40d05a0d456e0ad96cc95359583a2f3544aced9b26d16"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-26-c-how-are-you",
+      "lesson_id": "IBI-L0013",
+      "type": "carousel",
+      "scheduled_utc": "2026-11-26T13:10:00Z",
+      "media": [
+        "2026-11-26-c-how-are-you-01.jpg",
+        "2026-11-26-c-how-are-you-02.jpg",
+        "2026-11-26-c-how-are-you-03.jpg",
+        "2026-11-26-c-how-are-you-04.jpg",
+        "2026-11-26-c-how-are-you-05.jpg",
+        "2026-11-26-c-how-are-you-06.jpg",
+        "2026-11-26-c-how-are-you-07.jpg"
+      ],
+      "caption_file": "build/captions/2026-11-26-c-how-are-you.clean.txt",
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-26",
+      "asset_hashes": {
+        "2026-11-26-c-how-are-you-01.jpg": "7fe6e17ed4e241d87eae3df9ff016d84be54e125fc6ad4e9dba53a11503efd1b",
+        "2026-11-26-c-how-are-you-02.jpg": "c618459446d487698d3098ad0a3938cb6f4aa9bf0b221ad1d98990018d47ea3b",
+        "2026-11-26-c-how-are-you-03.jpg": "270bcbba63d7257b6a4986f67de39be7a5a3a51969117b6f0aad757d77bb7f00",
+        "2026-11-26-c-how-are-you-04.jpg": "feb4014974857e4e43a2923dd571ef3ddb5db576cd7b3bc9463d75f2476f0d94",
+        "2026-11-26-c-how-are-you-05.jpg": "0a1e0a2b03400c1fb0fcd0de93197266e8e0f66a3cea895fe4c418f0fb311b9d",
+        "2026-11-26-c-how-are-you-06.jpg": "7f975ae341fb04a11cf610ea6f9eecf3aa51c978985bd67859338821f9b6dffc",
+        "2026-11-26-c-how-are-you-07.jpg": "bf966c05eef6556fb7abfc8ca18c5bf00e8d618d4112ee73b06048f142fc5796",
+        "caption": "754d3cc88c41209540324b05ba0339d49ddc8512417c960abdd4896804527345"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-26-r-how-are-you",
+      "lesson_id": "IBI-L0014",
+      "type": "reel",
+      "scheduled_utc": "2026-11-26T17:35:00Z",
+      "media": [
+        "2026-11-26-r-how-are-you.mp4"
+      ],
+      "caption_file": "build/captions/2026-11-26-r-how-are-you.clean.txt",
+      "cover": "2026-11-26-r-how-are-you-cover.jpg",
+      "audio_kind": "native_recording",
+      "ai_generated": true,
+      "approval_id": "AUTO-2026-11-26",
+      "asset_hashes": {
+        "2026-11-26-r-how-are-you.mp4": "f80a60960dd55a4443201fb881f500d8f96fd310d6c7d8dbd66c77ee40524cf9",
+        "2026-11-26-r-how-are-you-cover.jpg": "6f51691c677a274d19b21b0196898560849efd3788111e07b49b65f7f6d4800a",
+        "caption": "49822fa2ab05fbd419b93816306fd455c8c0e61334e40dabe63fbdb9519deb15"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
     }
   ]
 }
