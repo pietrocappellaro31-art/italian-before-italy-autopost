@@ -481,13 +481,13 @@
       "ai_generated": false,
       "approval_id": "AUTO-2026-11-27",
       "asset_hashes": {
-        "2026-11-27-c-meeting-someone-01.jpg": "efcafbd49365a6383b4b69d7aa2592320cbf474e73cb5336c049cd0c764ae032",
+        "2026-11-27-c-meeting-someone-01.jpg": "f0a6a04b2bbcbc747d4f07e855c76cadab56f7bdcb0f3bc258695e1bffeeeb25",
         "2026-11-27-c-meeting-someone-02.jpg": "8680335a68a79b35290c793063b9eb4fa2c373877ccf26d37190e54f6259582e",
         "2026-11-27-c-meeting-someone-03.jpg": "a3412eb32f2265359a834101a0a38872ea59baf2b891dd0a8008ddccaed3fc08",
         "2026-11-27-c-meeting-someone-04.jpg": "77f02dd0a3d546a59bbbf4840da3c0630056ae3346a7dee963e991eccd6588a7",
         "2026-11-27-c-meeting-someone-05.jpg": "8add3a756072a0977e1c9fb610a6acee08a70b2fea1fd542f145d6ee855c2205",
         "2026-11-27-c-meeting-someone-06.jpg": "ca9c74465fdbbcb9904d01c09604a9c86f2dfa6b5e8a0159d6ad0dd19c552686",
-        "2026-11-27-c-meeting-someone-07.jpg": "e7cf7fc79d8e4c98d6b2852a9d7c222edf1daf9cb07fb0d34145b15b4795ec4f",
+        "2026-11-27-c-meeting-someone-07.jpg": "6a87c64dbd2a7031ed4d2f058f3537ae6d0407794f2e65cfef60e827701d05cf",
         "caption": "d8d32656e539209cadd47a745890d204f6cabea9a075af135dc90e0e0f634e95"
       },
       "requires_published": null,
@@ -514,8 +514,8 @@
       "ai_generated": true,
       "approval_id": "AUTO-2026-11-27",
       "asset_hashes": {
-        "2026-11-27-r-meeting-someone.mp4": "430f159697cc50a812c33aab40bde0a9858db9d7ab02212bfb107a756181bfc6",
-        "2026-11-27-r-meeting-someone-cover.jpg": "c8b5346f2c16d64754e9e8d7d94e589a4041d602b13c4a3a8603160b5a263575",
+        "2026-11-27-r-meeting-someone.mp4": "376237cf42b93ef2fadaf7fe4fc2e18a6ae1e13e6238d9572def6afe3a8a4b61",
+        "2026-11-27-r-meeting-someone-cover.jpg": "a42ed02e9d5f252b1a082bff5f8fc7e4368516152f91ac53e8b3126851e6b055",
         "caption": "9ae6869a3c51a848dd303d2819163d6a40b6aa2b694af28e0c0be66871e97b0f"
       },
       "requires_published": null,
@@ -542,7 +542,7 @@
       "ai_generated": false,
       "approval_id": "AUTO-2026-11-27",
       "asset_hashes": {
-        "2026-11-27-s-book.jpg": "387b222797c81b8a35f43948a4fef766d6e718be45ac30a8f5f0c8b028b4d1d9"
+        "2026-11-27-s-book.jpg": "d903080cc0275b4c1b5389b5c505e008f5c7a1dcbabb930921bb9883241ad901"
       },
       "requires_published": null,
       "cap_exempt": null,

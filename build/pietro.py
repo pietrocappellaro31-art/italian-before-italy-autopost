@@ -8,7 +8,7 @@ Original vector art in PIL, no AI image generation.
 
 Features from the photos: dark brown messy hair with forward tufts, thick dark straight brows, brown eyes that
 squint when he smiles, long straight nose, big bright toothy grin, defined jaw, light olive skin with a few
-freckles and a small mole on his left cheek near the chin, white shirt with navy pinstripes, shell necklace.
+freckles, white shirt with navy pinstripes, shell necklace.
 
 Honesty rule: the mouth only moves to Pietro's own recordings. During the AI English narration he reacts
 (smiles, nods, gestures) but does not lip-sync, so the AI voice is never presented as his.
@@ -164,7 +164,6 @@ def _body(d, st):
     outfit = st.outfit
     shirt = SHIRT if outfit != "waiter" else (30, 34, 50)
     stroke_line(d, [(CX, 520), (CX, 620)], 110, SKIN, ow=4)                      # neck
-    d.polygon([(CX - 55, 560), (CX + 55, 560), (CX + 52, 610), (CX - 52, 610)], fill=SKIN_D)
     poly = torso_outline()
     d.polygon(poly, fill=shirt, outline=LINE, width=5)
     if outfit != "waiter":                                                        # pinstripes clipped to torso
@@ -242,14 +241,11 @@ def _face(d, st, t):
         d.arc([CX + sgn * 166 - 12, 330, CX + sgn * 166 + 12, 372], 90 - sgn * 90, 270 - sgn * 90, fill=SKIN_D,
               width=4)
     d.polygon(face_outline(), fill=SKIN, outline=LINE, width=5)
-    d.polygon(smooth([(CX + 150, 380), (CX + 158, 420), (CX + 128, 490), (CX + 74, 540), (CX + 110, 470)], 5),
-              fill=SKIN_D)                                                         # jaw shadow (light from left)
     if happy:
         _ell(d, CX - 100, 440, 34, 20, fill=(236, 156, 132))
         _ell(d, CX + 100, 440, 34, 20, fill=(236, 156, 132))
     for fx, fy in ((-84, 404), (-70, 418), (-96, 422), (74, 406), (90, 420), (-18, 392), (16, 396), (60, 426)):
         _ell(d, CX + fx, fy, 3, 3, fill=SKIN_D)                                   # freckles
-    _ell(d, CX + 52, 512, 4.5, 4.5, fill=(92, 56, 44))                            # mole on his left, near the chin
 
     squint = 0.5 if (e == "grin" and not talking) else (0.25 if happy else 0.0)
     lx, ly = st.look
@@ -287,7 +283,8 @@ def _face(d, st, t):
 
     my = 486
     o = st.mouth
-    if talking:                                    # lip-sync to his own recording
+    if talking:                                    # lip-sync to his own recording (no dark slit at low levels)
+        o = 0.25 + 0.75 * o
         w, h = 52 + (10 if e == "grin" else 0) - 6 * o, 12 + 44 * o
         d.chord([CX - w, my - h * 0.45, CX + w, my + h], 0, 360, fill=MOUTH_IN, outline=LINE, width=5)
         d.chord([CX - w * 0.62, my + h * 0.3, CX + w * 0.62, my + h * 0.98], 180, 360, fill=TONGUE)
@@ -383,6 +380,8 @@ def animate(t, talk_level=0.0, mode="idle", speaking=False, outfit="shirt", seed
     """Lively default motion: blinks, eye darts, nods, brow pops, gestures by mode.
     mode: idle | hook | listen | think | celebrate | turn | book | wave"""
     rnd = math.sin(seed * 12.9898) * 43758.5453 % 1
+    talk_level = max(0.0, (talk_level - 0.22) / 0.78)      # ignore room noise and breaths
+    speaking = speaking and talk_level > 0.05
     blink = 1.0 if (t + rnd * 3) % 3.1 < 0.12 else 0.0
     look = (math.sin(t * 0.9 + seed) * 0.6, 0.0) if not speaking else (0.0, 0.0)
     tilt = 3.5 * math.sin(t * 1.7 + seed) + (2.5 * talk_level if speaking else 0)
