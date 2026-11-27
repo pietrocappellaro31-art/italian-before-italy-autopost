@@ -125,9 +125,26 @@ class Scheduling(Base):
         due, _ = publish.select_due(m, NOW)
         self.assertEqual([p["id"] for p in due], ["r1", "r2"])
 
+    def test_promo_story_is_fourth_post(self):
+        NIGHT = datetime(2026, 12, 1, 23, 40, tzinfo=timezone.utc)   # 18:40 ET
+        done = [post(i, k, w, status="published", published_id=i, published_at_utc=w.replace("Z", "+00:00"))
+                for i, k, w in (("s", "story", "2026-12-01T12:30:00Z"), ("c", "carousel", "2026-12-01T13:10:00Z"),
+                                ("r", "reel", "2026-12-01T17:35:00Z"))]
+        m = manifest(*done, post("b1", "story", "2026-12-01T23:30:00Z", promo=True),
+                     post("b2", "story", "2026-12-01T23:31:00Z", promo=True),
+                     post("r2", "reel", "2026-12-01T23:32:00Z", promo=True))
+        due, _ = publish.select_due(m, NIGHT)
+        self.assertEqual([p["id"] for p in due], ["b1"])     # one booking Story; a promo Reel is never allowed
+
+    def test_promo_does_not_take_regular_slot(self):
+        m = manifest(post("b", "story", "2026-12-01T11:00:00Z", promo=True), post("s", "story", "2026-12-01T12:30:00Z"),
+                     post("c", "carousel", "2026-12-01T13:10:00Z"), post("r", "reel", "2026-12-01T17:35:00Z"))
+        due, _ = publish.select_due(m, NOW)
+        self.assertEqual([p["id"] for p in due], ["b", "s", "c", "r"])
+
     def test_weekly_cap(self):
         done = [post(f"p{i}", "story", "2026-11-30T12:30:00Z", status="published", published_id=str(i),
-                     published_at_utc="2026-11-30T13:00:00+00:00") for i in range(21)]
+                     published_at_utc="2026-11-30T13:00:00+00:00") for i in range(24)]
         m = manifest(*done, post("c", "carousel", "2026-12-01T13:10:00Z"))
         due, _ = publish.select_due(m, NOW)
         self.assertEqual(due, [])

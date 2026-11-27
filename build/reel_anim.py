@@ -29,6 +29,31 @@ SERIF = "/usr/share/fonts/truetype/google-fonts/Lora-Variable.ttf"
 SANS = "/usr/share/fonts/opentype/inter/Inter-Regular.otf"
 SANS_SB = "/usr/share/fonts/opentype/inter/Inter-SemiBold.otf"
 HANDLE = "@italianbeforeitaly"
+PURE = (255, 255, 255)
+# Grid rotation (owner 26 Nov 2026): every post is blue, white or cream. Hook/cta use the hero colour.
+THEMES = {"blue": {"hero": BLUE, "body": CREAM}, "white": {"hero": PURE, "body": PURE},
+          "cream": {"hero": CREAM, "body": CREAM}}
+THEME = "blue"
+BOOK_TEXT = "Want to speak like this? Book an intro session with Pietro"
+
+
+def bg_for(kind):
+    return THEMES[THEME]["hero" if kind in ("hook", "cta") else "body"]
+
+
+def is_dark(kind):
+    return bg_for(kind) == BLUE
+
+
+def tint(bg, k=0.04):
+    """A barely different shade of the background for moving shapes."""
+    if bg == BLUE:
+        return (12 + int(60 * k), 64 + int(60 * k), 148 + int(40 * k))
+    if bg == PURE:                                   # light blue tints on white, never grey
+        return (int(255 - 420 * k), int(255 - 300 * k), int(255 - 120 * k))
+    return tuple(int(c - c * k) for c in bg)
+
+
 CREDIT = "Italian: Pietro, native speaker (original recording)"
 CREDIT_VO = "Italian: Pietro, native speaker \u00b7 English narration: AI voice"
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
@@ -221,9 +246,33 @@ def arch(d, cx, cy, size, p, color, width=10):
         d.line([(cx + size - width / 2, cy), (cx + size - width / 2, cy + size * 0.7)], fill=color, width=width)
 
 
-def particles(d, t, kind, dark):
+def bg_motion(d, t, bg):
+    """Large soft circles and a Roman arch outline drifting behind everything."""
+    c = tint(bg, 0.035)
+    for i, (r, sp) in enumerate(((420, 0.11), (300, 0.17), (360, 0.08))):
+        cx = W * (0.15 + 0.35 * i) + 120 * math.sin(t * sp * 2 + i * 2)
+        cy = H * (0.25 + 0.27 * i) + 90 * math.cos(t * sp * 2.6 + i)
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=c)
+    ax, ay = W - 170 + 20 * math.sin(t * 0.5), 1500 + 15 * math.cos(t * 0.4)
+    d.arc([ax - 150, ay - 150, ax + 150, ay + 150], 180, 360, fill=tint(bg, 0.07), width=14)
+    d.line([ax - 150, ay, ax - 150, ay + 260], fill=tint(bg, 0.07), width=14)
+    d.line([ax + 150, ay, ax + 150, ay + 260], fill=tint(bg, 0.07), width=14)
+
+
+def burst(d, cx, cy, p, color, r=120, n=10):
+    """Radial spark burst for pops and reveals (p 0..1)."""
+    if not 0 < p < 1:
+        return
+    for k in range(n):
+        a = k * 2 * math.pi / n + 0.3
+        r0, r1 = r * (0.3 + 0.7 * p), r * (0.55 + 0.75 * p)
+        d.line([cx + r0 * math.cos(a), cy + r0 * math.sin(a), cx + r1 * math.cos(a), cy + r1 * math.sin(a)],
+               fill=color, width=max(2, int(9 * (1 - p))))
+
+
+def particles(d, t, kind, dark, bg=None):
     """Slow drifting background shapes: coffee beans or letters. Deterministic per index."""
-    col = (30, 72, 145) if dark else (228, 222, 206)
+    col = (30, 72, 145) if dark else tint(bg or CREAM, 0.08)
     for i in range(14):
         x = (i * 157 + 60) % (W - 80) + 40 + 18 * math.sin(t * 0.8 + i)
         y = (1700 - ((t * (22 + i % 5 * 6) + i * 233) % 1500))
@@ -240,9 +289,10 @@ def awning(d, p):
     h = 120 * k
     stripes = 9
     sw = W / stripes
+    a, b = (CREAM, (230, 224, 210)) if THEME == "blue" else (BLUE, (40, 86, 160))
     for i in range(stripes):
-        d.rectangle([i * sw, 0, (i + 1) * sw, h], fill=CREAM if i % 2 else (230, 224, 210))
-        d.pieslice([i * sw, h - sw / 2, (i + 1) * sw, h + sw / 2], 0, 180, fill=CREAM if i % 2 else (230, 224, 210))
+        d.rectangle([i * sw, 0, (i + 1) * sw, h], fill=a if i % 2 else b)
+        d.pieslice([i * sw, h - sw / 2, (i + 1) * sw, h + sw / 2], 0, 180, fill=a if i % 2 else b)
     d.line([0, h, W, h], fill=GOLD, width=4)
 
 
@@ -286,22 +336,79 @@ def double_highlight(d, word, f, x, y, color, accent):
         i += 2 if dbl else 1
 
 
+def hook_title(d, text, hl, x, y, t, color, dim, dark):
+    """Hook title: words slam in fast (all visible by ~0.5 s), highlighted words get a gold marker swipe."""
+    f = font(SERIF, 118 if len(text) < 34 else 100, 600)
+    hls = {w.strip(".,!?:;\"'").lower() for w in hl.split()} if hl else set()
+    n = 0
+    for line in wrap(d, text, f, W - 2 * M):
+        cx = x
+        for word in line:
+            k = ease((t - n * 0.025) / 0.12)   # every word visible from frame 0; only a quick drop-in motion
+            bare = word.strip(".,!?:;\"'").lower()
+            ww = d.textlength(word, font=f)
+            if bare in hls:
+                m = ease((t - 0.45 - 0.1 * n * 0) / 0.3)
+                d.rounded_rectangle([cx - 10, y + f.size * 0.18, cx - 10 + (ww + 20) * m, y + f.size * 1.12],
+                                    radius=14, fill=GOLD)
+            col = NAVY if bare in hls and t > 0.6 else color
+            d.text((cx, y - 36 * (1 - k)), word, font=f, fill=col)
+            cx += d.textlength(word + " ", font=f)
+            n += 1
+        y += int(f.size * 1.18)
+    return y
+
+
+def sound_pill(img, t, dark):
+    d = ImageDraw.Draw(img)
+    f = font(SANS_SB, 38)
+    label = "Sound on"
+    w = d.textlength(label, font=f) + 130
+    x0, y0 = (W - w) / 2, 1440
+    q = ease((t - 0.3) / 0.3)
+    col = CREAM if dark else BLUE
+    d.rounded_rectangle([x0, y0 + 30 * (1 - q), x0 + w, y0 + 80 + 30 * (1 - q)], radius=40, outline=col, width=4)
+    for k in range(4):
+        h = 10 + 18 * abs(math.sin(t * 6 + k))
+        bx = x0 + 34 + k * 14
+        d.line([bx, y0 + 40 - h / 2, bx, y0 + 40 + h / 2], fill=GOLD, width=6)
+    d.text((x0 + 105, y0 + 18), label, font=f, fill=col)
+
+
+def fly_in(img, d, names, cx, cy, size, t, start):
+    """Icons burst out of the centre to their slots with overshoot, then bob."""
+    gap = size + 40
+    x0 = cx - gap * (len(names) - 1) / 2
+    for k, nm in enumerate(names):
+        p = ease((t - start - 0.12 * k) / 0.45)
+        tx, ty = x0 + k * gap, cy
+        x, y = cx + (tx - cx) * p, cy + 200 * (1 - p) + (ty - cy) * p
+        icons.paste_icon(img, nm, x, y, size, (t - start - 0.12 * k) / 0.35, t)
+        burst(d, tx, ty, (t - start - 0.12 * k - 0.35) / 0.4, GOLD, size * 0.75)
+
+
 def draw_beat(beat, t, dur, idx, n, level, img):
     d = ImageDraw.Draw(img)
     p = t / dur if dur else 1
     kind = beat["kind"]
-    dark = kind in ("hook", "cta")
+    dark = is_dark(kind)
+    bg = bg_for(kind)
     fg, track = (CREAM, (40, 80, 150)) if dark else (BLUE, RULE)
+    hfg, hdim = (CREAM, (40, 80, 150)) if dark else (BLUE, tint(bg, 0.16))
+    bg_motion(d, t + idx * 5, bg)
     if beat.get("particles"):
-        particles(d, t + idx * 3, beat["particles"], dark)
+        particles(d, t + idx * 3, beat["particles"], dark, bg)
     if kind == "hook" and beat.get("scene") == "cafe":
         awning(d, t / 0.6)
     progress(d, idx, n, p, GOLD if dark else BLUE, track)
     if kind == "hook":
-        tag(d, beat["series"], t / 0.5, CREAM, BLUE)
-        y = words_reveal(d, beat["title"], font(SERIF, 108, 600), M, 360, W - 2 * M, t - 0.2, 0.18, CREAM, (40, 80, 150))
-        if beat.get("sub") and t > 1.0:
-            text_block(d, beat["sub"], font(SANS, 46), M, y + 20, W - 2 * M, CREAM)
+        k = pop(t / 0.35)
+        tag(d, beat["series"], min(t / 0.25, 1), CREAM if dark else BLUE, BLUE if dark else CREAM)
+        y = hook_title(d, beat["title"], beat.get("hl", ""), M, 330, t, hfg, hdim, dark)
+        if beat.get("sub") and t > 0.55:
+            text_block(d, beat["sub"], font(SANS, 46), M, y + 20, W - 2 * M, hfg)
+        if t > 0.3:
+            sound_pill(img, t, dark)
         if beat.get("art") == "cup":
             cup(d, W // 2, 1150, (t - 0.3) / 1.6, t, with_face=True, happy=t > 1.8)
         elif beat.get("art") == "pairs":
@@ -314,11 +421,12 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             for k, (wd, xx) in enumerate(((pw[0], 230), (pw[1], 640))):
                 q = ease((t - 0.4 - 0.3 * k) * 2.5)
                 if q > 0:
-                    d.rounded_rectangle([xx - 170, 1040 - 90 * q, xx + 210, 1250], radius=28, fill=WHITE)
+                    d.rounded_rectangle([xx - 170, 1040 - 90 * q, xx + 210, 1250], radius=28, fill=WHITE, outline=RULE,
+                                        width=4)
                     double_highlight(d, wd, f, xx - 130, 1080, BLUE, (176, 106, 0))
             sticker(img, beat.get("pair_sticker", "hear the difference?"), W // 2, 1340, (t - 1.2) / 0.5, angle=4)
         elif beat.get("pics"):
-            pics_row(img, beat["pics"][:3], W // 2, 1180, 260 if len(beat["pics"]) < 3 else 220, t, 0.5)
+            fly_in(img, d, beat["pics"][:3], W // 2, 1150, 260 if len(beat["pics"]) < 3 else 220, t, 0.25)
     elif kind in ("listen", "turn"):
         tag(d, beat.get("label", "Listen" if kind == "listen" else "Your turn"), t / 0.4, BLUE, CREAM)
         f = font(SERIF, 96 if len(beat["it"]) < 40 else 78, 600)
@@ -329,6 +437,7 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             wave(d, level, W // 2, y + 170, t, BLUE)
             if beat.get("sticker"):
                 sticker(img, beat["sticker"], W - 260, y + 330, (t - 0.6) / 0.5)
+                burst(d, W - 260, y + 330, (t - 0.75) / 0.4, GOLD, 200, 12)
             who = speaker_avatar(beat.get("label"))
             right = who == "you"
             ay = min(max(1310, y + 520), 1400)
@@ -366,7 +475,7 @@ def draw_beat(beat, t, dur, idx, n, level, img):
         while d.textlength(beat["word"], font=f) > W - 2 * M - 60 and f.size > 60:
             f = font(SERIF, f.size - 8, 600)
         k = ease(t / 0.3)
-        d.rounded_rectangle([M, 420 + (1 - k) * 80, W - M, 760], radius=32, fill=WHITE)
+        d.rounded_rectangle([M, 420 + (1 - k) * 80, W - M, 760], radius=32, fill=WHITE, outline=RULE, width=4)
         double_highlight(d, beat["word"], f, (W - d.textlength(beat["word"], font=f)) / 2, 500, BLUE, (176, 106, 0))
         text_block(d, beat["en"], font(SANS_SB, 52), M, 800, W - 2 * M, NAVY, center=True)
         wave(d, level, W // 2, 1060, t, BLUE)
@@ -416,14 +525,27 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             sticker(img, beat.get("explain", "correct!"), W // 2, 1080, (t - reveal) / 0.4, angle=-3)
             confetti(d, W // 2, 800, (t - reveal) / 1.2)
     elif kind == "cta":
-        arch(d, W // 2, 760, 110, t / 0.9, CREAM)
-        y = 880
-        if t > 0.6:
-            y = words_reveal(d, beat["text"], font(SERIF, 96, 600), M, 880, W - 2 * M, t - 0.6, 0.15, CREAM,
-                             (40, 80, 150), center=True)
+        book = beat.get("book")
+        arch(d, W // 2, 700 if book else 760, 110, t / 0.9, hfg)
+        y = 880 if not book else 820
+        text = beat.get("text") if not book else BOOK_TEXT
+        if t > 0.4:
+            y = words_reveal(d, text, font(SERIF, 96 if not book else 84, 600), M, y, W - 2 * M, t - 0.4, 0.1, hfg,
+                             hdim, center=True)
+        if book and t > 1.0:
+            q = pop((t - 1.0) / 0.4)
+            pw, ph = 560 * q, 120 * q
+            pulse = 1 + 0.04 * math.sin(t * 7)
+            pw, ph = pw * pulse, ph * pulse
+            d.rounded_rectangle([W / 2 - pw / 2, y + 60, W / 2 + pw / 2, y + 60 + ph], radius=60, fill=GOLD)
+            if q > 0.8:
+                f = font(SANS_SB, 52)
+                d.text((W / 2 - d.textlength("Link in bio", font=f) / 2, y + 60 + ph / 2 - 32), "Link in bio", font=f,
+                       fill=NAVY)
+            y += 200
         if t > 1.3:
             text_block(d, CREDIT_VO if beat.get("_ai_vo") else CREDIT, font(SANS, 34), M, max(y + 40, 1180),
-                       W - 2 * M, CREAM, center=True)
+                       W - 2 * M, hfg, center=True)
     d.text((M, 1560), HANDLE, font=font(SANS, 34), fill=fg)
 
 
@@ -458,6 +580,10 @@ def loudnorm_filter(src):
 
 def main(argv):
     beats = json.loads(pathlib.Path(argv[1]).read_text())
+    global THEME
+    THEME = beats[0].get("theme", "blue")
+    if THEME not in THEMES:
+        raise SystemExit(f"unknown theme {THEME}")
     clips, out = pathlib.Path(argv[2]), pathlib.Path(argv[3])
     out.mkdir(parents=True, exist_ok=True)
     import tempfile
@@ -502,12 +628,23 @@ def main(argv):
             k = int((lt - x["lead"]) * FPS)
             if 0 <= k < len(x["env"]):
                 level = float(x["env"][k])
-        bg = BLUE if x["beat"]["kind"] in ("hook", "cta") else CREAM
-        img = Image.new("RGB", (W, H), bg)
+        img = Image.new("RGB", (W, H), bg_for(x["beat"]["kind"]))
         draw_beat(x["beat"], lt, x["dur"], idx, n, level, img)
+        kb = x["beat"]["kind"]
+        zoom = 0.0
+        if lt < 0.4:                                     # camera punch-in at every beat (stronger on the hook)
+            zoom = (0.14 if kb == "hook" else 0.05) * (1 - ease(lt / 0.4))
+        if kb == "quiz" and 0 <= lt - x["beat"].get("_reveal", 1e9) < 0.35:
+            zoom = max(zoom, 0.04 * (1 - (lt - x["beat"]["_reveal"]) / 0.35))
+        if zoom > 0.002:
+            cw, chh = int(W / (1 + zoom)), int(H / (1 + zoom))
+            img = img.crop(((W - cw) // 2, (H - chh) // 2, (W - cw) // 2 + cw, (H - chh) // 2 + chh)).resize((W, H))
+        if kb == "quiz" and 0 <= lt - x["beat"].get("_reveal", 1e9) < 0.3:
+            dx = int(12 * math.sin((lt - x["beat"]["_reveal"]) * 60) * (1 - (lt - x["beat"]["_reveal"]) / 0.3))
+            img = img.transform((W, H), Image.AFFINE, (1, 0, -dx, 0, 1, 0), fillcolor=bg_for(kb))
         if idx > 0 and lt < TR:                          # previous beat slides up and away
             prev = plan[idx - 1]
-            pbg = BLUE if prev["beat"]["kind"] in ("hook", "cta") else CREAM
+            pbg = bg_for(prev["beat"]["kind"])
             pimg = Image.new("RGB", (W, H), pbg)
             draw_beat(prev["beat"], prev["dur"], prev["dur"], idx - 1, n, 0.0, pimg)
             off = int(H * ease(lt / TR))
@@ -570,7 +707,7 @@ def main(argv):
                     "-c:v", "copy",
                     "-c:a", "aac", "-b:a", "192k", "-ac", "2", "-shortest", "-movflags", "+faststart",
                     str(out / "reel.mp4")], check=True)
-    cover = Image.new("RGB", (W, H), BLUE)
+    cover = Image.new("RGB", (W, H), bg_for("hook"))
     draw_beat(plan[0]["beat"], plan[0]["dur"], plan[0]["dur"], 0, n, 0.0, cover)
     cover.save(out / "cover.jpg", quality=92)
     sheet = Image.new("RGB", (270 * min(n, 6), 480 * ((n + 5) // 6)), "white")

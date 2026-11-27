@@ -54,7 +54,8 @@ MANIFEST = os.path.join(HERE, "posts.json")
 FORMATS = ("carousel", "reel", "story")
 MAX_PER_FORMAT_PER_DAY = 1
 MAX_PER_DAY = 3
-MAX_PER_WEEK = 21
+MAX_PER_WEEK = 24            # 21 regular + 3 booking Stories (owner decision 26 Nov 2026)
+PROMO_DAY_TOTAL = 4          # a booking Story may be the 4th post of a day, at most 1 per day
 GRACE_HOURS = 8            # GitHub cron is unreliable (sister measured gaps of up to 10 h); after this, a slot is missed
 MAX_ATTEMPTS = 3           # then the entry is blocked and waits for a person
 
@@ -262,7 +263,10 @@ def select_due(manifest, now):
     counted = [p for p in posts if counts_toward_caps(p)]
     day_total = sum(1 for p in counted if eastern_day(cap_time(p)) == today)
     week_total = sum(1 for p in counted if eastern_week(cap_time(p)) == week)
-    day_format = {f: sum(1 for p in counted if p["type"] == f and eastern_day(cap_time(p)) == today) for f in FORMATS}
+    day_format = {f: sum(1 for p in counted if p["type"] == f and not p.get("promo")
+                         and eastern_day(cap_time(p)) == today) for f in FORMATS}
+    promo_today = sum(1 for p in counted if p.get("promo") and eastern_day(cap_time(p)) == today)
+    regular_today = day_total - promo_today
 
     # A format with an unresolved publish outcome publishes nothing until a person confirms it.
     frozen = {p["type"] for p in posts if p.get("status") == "needs_reconciliation"}
@@ -284,12 +288,24 @@ def select_due(manifest, now):
             log(f"Holding {post['id']}: depends on {dep}, which is not published")
             continue
         exempt = bool(post.get("cap_exempt"))            # owner-approved one-off; day and week caps still apply
-        if ((day_format[post["type"]] >= MAX_PER_FORMAT_PER_DAY and not exempt) or day_total >= MAX_PER_DAY
+        if post.get("promo"):                            # booking Story: own allowance, never a Reel or carousel
+            blocked = (post["type"] != "story" or promo_today >= 1 or day_total >= PROMO_DAY_TOTAL
+                       or week_total >= MAX_PER_WEEK)
+            if blocked:
+                log(f"Cap reached, holding {post['id']}")
+                continue
+            due.append(post)
+            promo_today += 1
+            day_total += 1
+            week_total += 1
+            continue
+        if ((day_format[post["type"]] >= MAX_PER_FORMAT_PER_DAY and not exempt) or regular_today >= MAX_PER_DAY
                 or week_total >= MAX_PER_WEEK):
             log(f"Cap reached, holding {post['id']}")
             continue
         due.append(post)
         day_format[post["type"]] += 1
+        regular_today += 1
         day_total += 1
         week_total += 1
     return due, missed

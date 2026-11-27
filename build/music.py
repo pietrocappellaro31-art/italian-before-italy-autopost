@@ -79,6 +79,8 @@ MOODS = {
 
 
 def score(seconds, mood="caffe", seed=7):
+    if mood in BEATS:
+        return beat_score(seconds, mood, seed)
     if mood in PIANO_PROGS:
         return piano_score(seconds, mood, seed)
     cfg, rng = MOODS[mood], np.random.default_rng(seed)
@@ -189,6 +191,116 @@ def piano_score(seconds, mood="piano", seed=7):
     track[-fade:] *= np.linspace(1, 0, fade)
     track[: int(SR * 0.5)] *= np.linspace(0, 1, int(SR * 0.5))
     return track / (np.abs(track).max() + 1e-9) * 0.7
+
+
+# ---- Upbeat original beats (owner request 26 Nov 2026: "viral" energy). Original compositions only. ----
+def kick(vel=1.0):
+    t = np.arange(int(SR * 0.35)) / SR
+    f = 50 + 110 * np.exp(-t * 28)
+    return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 9) * vel
+
+
+def snare(rng, clap=False, vel=1.0):
+    n = int(SR * (0.22 if clap else 0.18))
+    t = np.arange(n) / SR
+    noise = rng.standard_normal(n)
+    noise = noise - np.convolve(noise, np.ones(6) / 6, "same")          # brighten
+    env = np.exp(-t * (22 if clap else 26))
+    if clap:
+        env = env * (1 + 0.8 * (np.sin(2 * np.pi * 90 * t) > 0) * (t < 0.03))
+    body = 0 if clap else np.sin(2 * np.pi * 190 * t) * np.exp(-t * 30) * 0.5
+    return (noise * env * 0.45 + body) * vel
+
+
+def hat(rng, open_=False, vel=1.0):
+    n = int(SR * (0.16 if open_ else 0.045))
+    x = rng.standard_normal(n)
+    x = x - np.convolve(x, np.ones(3) / 3, "same")
+    return x * np.exp(-np.arange(n) / SR * (18 if open_ else 90)) * 0.22 * vel
+
+
+def synth_bass(freq, dur):
+    t = np.arange(int(SR * dur)) / SR
+    x = np.sin(2 * np.pi * freq * t) + 0.35 * np.sin(4 * np.pi * freq * t) + 0.12 * np.sin(6 * np.pi * freq * t)
+    env = np.minimum(1, t / 0.008) * np.exp(-t * 2.2)
+    return np.tanh(1.6 * x * env) * 0.6
+
+
+def keys(freqs, dur):
+    t = np.arange(int(SR * dur)) / SR
+    x = sum(np.sin(2 * np.pi * f * t) + 0.3 * np.sin(2 * np.pi * 2 * f * t) * np.exp(-t * 6) for f in freqs)
+    return x * np.minimum(1, t / 0.006) * np.exp(-t * 5) / len(freqs)
+
+
+def marimba(freq, dur):
+    t = np.arange(int(SR * dur)) / SR
+    x = np.sin(2 * np.pi * freq * t) + 0.25 * np.sin(2 * np.pi * 4 * freq * t) * np.exp(-t * 30)
+    return x * np.minimum(1, t / 0.003) * np.exp(-t * 7)
+
+
+def up(note, k=1):
+    return note[:-1] + str(int(note[-1]) + k)
+
+
+# bpm, swing, progression (root, tones), drum pattern per 16th step: K kick, S snare, C clap, h hat, o open hat
+BEATS = {
+    "pop":    (112, 0.0, [("C2", ["C4", "E4", "G4", "B4"]), ("A1", ["A3", "C4", "E4", "G4"]),
+                          ("F1", ["F3", "A3", "C4", "E4"]), ("G1", ["G3", "B3", "D4", "F4"])],
+               "K.h.S.h.K.hKS.ho"),
+    "lofi":   (86, 0.18, [("D2", ["D4", "F4", "A4", "C5"]), ("G1", ["G3", "B3", "D4", "F4"]),
+                          ("C2", ["C4", "E4", "G4", "B4"]), ("A1", ["A3", "C4", "E4", "G4"])],
+               "K.h.S.h..hKS.h."),
+    "bounce": (122, 0.0, [("F1", ["F3", "A3", "C4", "E4"]), ("G1", ["G3", "B3", "D4", "F4"]),
+                          ("E1", ["E3", "G3", "B3", "D4"]), ("A1", ["A3", "C4", "E4", "G4"])],
+               "K.hhC.hhK.hhC.ho"),
+}
+HOOKS = [[0, 2, 1, 2, -1, 3, 2, -1], [2, -1, 1, 0, 2, -1, 3, 1], [0, 0, 2, -1, 3, 2, 1, -1]]
+
+
+def beat_score(seconds, mood="pop", seed=7):
+    bpm, swing, prog, pat = BEATS[mood]
+    rng = np.random.default_rng(seed)
+    six = 60 / bpm / 4
+    track = np.zeros(int(SR * (seconds + 3)))
+    side = np.ones_like(track)                       # sidechain pump from the kick
+    hook = HOOKS[seed % len(HOOKS)]
+    t, bar = 0.0, 0
+    while t < seconds:
+        root, tones = prog[bar % len(prog)]
+        intro = bar == 0
+        for i, ch in enumerate(pat):
+            at = t + i * six + (swing * six if i % 2 else 0)
+            if ch == "K":
+                place(track, kick(), at, 0.9)
+                a = int(at * SR)
+                n = min(int(SR * 0.22), len(side) - a)
+                if n > 0:
+                    side[a:a + n] = np.minimum(side[a:a + n], 0.45 + 0.55 * np.linspace(0, 1, n) ** 0.6)
+            elif ch in "SC" and not intro:
+                place(track, snare(rng, clap=ch == "C"), at, 0.7)
+            elif ch == "h":
+                place(track, hat(rng, vel=0.7 + 0.3 * rng.random()), at, 0.8)
+            elif ch == "o" and not intro:
+                place(track, hat(rng, True), at, 0.7)
+        for k in (0, 3, 6, 10, 12):                   # syncopated bass
+            place(track, synth_bass(hz(root) * (2 if k == 10 else 1), six * 2.2), t + k * six, 0.55)
+        for k in (2, 6, 10, 14):                      # off-beat chord stabs
+            place(track, keys([hz(x) for x in tones[:3]], six * 1.6), t + k * six, 0.33)
+        if bar % 4 not in (3,) and not intro:         # catchy 8-step marimba hook, answered every 4th bar
+            for k, idx in enumerate(hook):
+                if idx >= 0:
+                    place(track, marimba(hz(up(tones[idx % len(tones)])), six * 2), t + k * 2 * six, 0.38)
+        else:
+            for k in (0, 3, 6):
+                place(track, marimba(hz(up(tones[(k + bar) % len(tones)])), six * 2), t + k * 2 * six, 0.3)
+        t += 16 * six
+        bar += 1
+    track = track * side
+    track = track[: int(SR * seconds)]
+    track = reverb(track, 1.2, 0.12)
+    fade = int(SR * 1.2)
+    track[-fade:] *= np.linspace(1, 0, fade)
+    return track / (np.abs(track).max() + 1e-9) * 0.75
 
 
 def sfx(kind):

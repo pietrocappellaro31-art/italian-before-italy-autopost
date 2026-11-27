@@ -24,8 +24,36 @@ import sys
 from PIL import Image, ImageDraw
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from reel_anim import (BLUE, CREAM, GOLD, HANDLE, M, NAVY, RULE, SANS, SANS_SB, SERIF, WHITE, arch, font,  # noqa: E402
-                       sticker, wrap)
+from reel_anim import (BLUE, CREAM, GOLD, HANDLE, M, NAVY, PURE, RULE, SANS, SANS_SB, SERIF, THEMES, WHITE,  # noqa: E402
+                       arch, bg_motion, font, sticker, wrap)
+import icons  # noqa: E402
+
+THEME = "blue"
+PROMOS = [  # booking Stories (owner decision 26 Nov 2026). No prices, no "free", no promises.
+    {"title": "Learning Italian before a trip?",
+     "body": "Book an intro session with me, Pietro. We talk about your goals and build a plan together.",
+     "pics": ["calendar", "bubble", "star"]},
+    {"title": "Want a plan, not just phrases?",
+     "body": "In a short intro session we look at where you are and where you want to go. Then we build your plan.",
+     "pics": ["pin", "arrows", "calendar"]},
+    {"title": "Practice with a native speaker",
+     "body": "Book an intro session with Pietro. Your level, your goals, your plan.",
+     "pics": ["bubble", "heart", "star"]},
+]
+
+
+def colors(kind):
+    hero = kind in ("cover", "cta")
+    bg = THEMES[THEME]["hero" if hero else "body"]
+    dark = bg == BLUE
+    return bg, dark, (CREAM if dark else BLUE)
+
+
+def pics(img, names, cx, cy, size):
+    gap = size + 30
+    x0 = cx - gap * (len(names) - 1) / 2
+    for k, nm in enumerate(names[:3]):
+        icons.paste_icon(img, nm, x0 + k * gap, cy, size, 1.0, 0.0, bob=0)
 
 CW, CH = 1080, 1350
 SW, SH = 1080, 1920
@@ -64,16 +92,21 @@ def tag(d, text, x, y, bg, fg):
 
 def carousel_slide(s, idx, total, series):
     kind = s["kind"]
-    dark = kind in ("cover", "cta")
-    img = Image.new("RGB", (CW, CH), BLUE if dark else CREAM)
+    bg, dark, hfg = colors(kind)
+    img = Image.new("RGB", (CW, CH), bg)
     d = ImageDraw.Draw(img)
+    bg_motion(d, idx * 7.3, bg)
     width, limit = CW - 2 * M, CH - 130
     if kind == "cover":
-        tag(d, series, M, 110, CREAM, BLUE)
-        arch(d, M + 60, 420, 60, 1.0, CREAM, 8)
-        y = block(d, s["title"], font(SERIF, 100, 600), M, 520, width, CREAM, limit=limit)
+        tag(d, series, M, 110, CREAM if dark else BLUE, BLUE if dark else CREAM)
+        has = bool(s.get("pics"))
+        arch(d, M + 60, 330 if has else 420, 60, 1.0, hfg, 8)
+        y = block(d, s["title"], font(SERIF, 100, 600), M, 430 if has else 520, width, hfg,
+                  limit=900 if has else limit)
         if s.get("sub"):
-            block(d, s["sub"], font(SANS, 44), M, y + 30, width, CREAM, limit=limit)
+            y = block(d, s["sub"], font(SANS, 44), M, y + 30, width, hfg, limit=950 if has else limit)
+        if has:
+            pics(img, s["pics"], 400, 1110, 190)
         sticker(img, "swipe", CW - 190, CH - 220, 1.0, angle=-6)
     elif kind == "phrase":
         tag(d, s.get("label", "Say it like this"), M, 110, BLUE, CREAM)
@@ -81,13 +114,15 @@ def carousel_slide(s, idx, total, series):
         d.line([M, y + 30, M + 160, y + 30], fill=GOLD, width=6)
         y = block(d, s["en"], font(SANS_SB, 52), M, y + 70, width, NAVY, limit=limit)
         if s.get("note"):
-            block(d, s["note"], font(SANS, 40), M, y + 50, width, NAVY, gap=1.35, limit=limit)
+            y = block(d, s["note"], font(SANS, 40), M, y + 50, width, NAVY, gap=1.35, limit=limit)
+        if s.get("pics") and y < CH - 480:            # room left: one big illustration as well
+            icons.paste_icon(img, s["pics"][0], CW - M - 150, CH - 330, 280, 1.0, 0.0, bob=0)
     elif kind == "compare":
         tag(d, s.get("label", "Compare"), M, 110, BLUE, CREAM)
         y = 260
         for side in ("left", "right"):
             c = s[side]
-            d.rounded_rectangle([M, y, CW - M, y + 400], radius=28, fill=WHITE)
+            d.rounded_rectangle([M, y, CW - M, y + 400], radius=28, fill=WHITE, outline=RULE, width=3)
             tag(d, c["tag"], M + 30, y + 30, GOLD, NAVY)
             yy = block(d, c["it"], font(SERIF, 70, 600), M + 30, y + 110, width - 60, BLUE, limit=y + 390)
             block(d, c["en"], font(SANS, 40), M + 30, yy + 10, width - 60, NAVY, limit=y + 390)
@@ -115,23 +150,31 @@ def carousel_slide(s, idx, total, series):
         if s.get("explain"):
             block(d, s["explain"], font(SANS, 44), M, y + 40, width, NAVY, gap=1.35, limit=limit)
     elif kind == "cta":
-        arch(d, CW // 2, 470, 90, 1.0, CREAM, 9)
-        y = block(d, s["text"], font(SERIF, 84, 600), M, 600, width, CREAM, center=True, limit=limit)
-        block(d, "New lesson every day · native-speaker audio in the Reels", font(SANS, 34), M, y + 40, width,
-              CREAM, center=True)
+        arch(d, CW // 2, 470, 90, 1.0, hfg, 9)
+        y = block(d, s["text"], font(SERIF, 84, 600), M, 600, width, hfg, center=True, limit=limit)
+        block(d, "New lesson every day · Pietro's native audio in the Reels", font(SANS, 34), M, y + 40, width,
+              hfg, center=True)
     else:
         raise ValueError(f"unknown slide kind {kind}")
+    if s.get("pics") and kind != "cover":            # small pictures in the top-right corner, clear of the text
+        names = s["pics"][:2]
+        for k, nm in enumerate(reversed(names)):
+            icons.paste_icon(img, nm, CW - M - 60 - k * 140, 136, 120, 1.0, 0.0, bob=0)
     frame(d, idx, total, dark, CW, CH)
     return img
 
 
 def story(spec):
-    img = Image.new("RGB", (SW, SH), CREAM)
+    bg = THEMES[THEME]["body"]
+    img = Image.new("RGB", (SW, SH), bg)
     d = ImageDraw.Draw(img)
+    bg_motion(d, 3.0, bg)
     width = SW - 2 * M
     top, limit = 250, 1650                      # keep clear of the Story header and reply bar
     d.rectangle([0, 0, SW, 210], fill=BLUE)
     d.text((M, 120), "Daily Italian challenge", font=font(SANS_SB, 40), fill=CREAM)
+    if spec.get("pic"):
+        icons.paste_icon(img, spec["pic"], SW - M - 70, 112, 140, 1.0, 0.0, bob=0)
     y = top
     if spec.get("prev"):
         p = spec["prev"]
@@ -155,9 +198,32 @@ def story(spec):
     return img
 
 
+def promo_story(spec):
+    """Booking Story: blue, bold, one action (link in bio)."""
+    v = PROMOS[spec.get("variant", 0) % len(PROMOS)]
+    img = Image.new("RGB", (SW, SH), BLUE)
+    d = ImageDraw.Draw(img)
+    bg_motion(d, 5.0 + spec.get("variant", 0), BLUE)
+    width = SW - 2 * M
+    tag(d, "1:1 with Pietro", M, 260, GOLD, NAVY)
+    y = block(d, v["title"], font(SERIF, 104, 600), M, 360, width, CREAM, limit=900)
+    y = block(d, v["body"], font(SANS, 50), M, y + 40, width, CREAM, gap=1.35, limit=1150)
+    if spec.get("pietro") and "pietro" in getattr(icons, "AVATAR_KINDS", ()):
+        icons.avatar(img, "pietro", SW // 2, 1330, 360, 1.0, 0.0)
+    else:
+        pics(img, v["pics"], SW // 2, 1300, 200)
+    d.rounded_rectangle([SW / 2 - 300, 1500, SW / 2 + 300, 1630], radius=65, fill=GOLD)
+    f = font(SANS_SB, 58)
+    d.text((SW / 2 - d.textlength("Link in bio", font=f) / 2, 1532), "Link in bio", font=f, fill=NAVY)
+    d.text((M, SH - 200), HANDLE, font=font(SANS, 34), fill=CREAM)
+    return img
+
+
 def main(argv):
     mode, spec, out, name = argv[1], json.loads(pathlib.Path(argv[2]).read_text()), pathlib.Path(argv[3]), argv[4]
     out.mkdir(parents=True, exist_ok=True)
+    global THEME
+    THEME = spec.get("theme", "blue")
     if mode == "carousel":
         slides = spec["slides"]
         if not 4 <= len(slides) <= 8:
@@ -170,8 +236,8 @@ def main(argv):
             img.save(path, quality=90)
             files.append(path.name)
         print(" ".join(files))
-    elif mode == "story":
-        img = story(spec)
+    elif mode in ("story", "promo"):
+        img = story(spec) if mode == "story" else promo_story(spec)
         assert img.size == (SW, SH)
         img.save(out / f"{name}.jpg", quality=90)
         print(f"{name}.jpg")

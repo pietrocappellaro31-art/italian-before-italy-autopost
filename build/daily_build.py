@@ -51,6 +51,37 @@ def lint_caption(text):
     return problems
 
 
+EPOCH = "2026-11-22"
+CYCLE = ["blue", "white", "cream"]          # grid colour rotation, post after post (owner 26 Nov 2026)
+BEAT_MOODS = ["pop", "bounce", "lofi"]      # upbeat original music, rotated by day
+BOOK_VO = "Want to speak like this? Book an intro session with Pietro. Link in bio."
+
+
+def house_plan(date):
+    """Deterministic per-day choices: colours, music, booking ending (every 3rd Reel), booking Story (Mon/Wed/Fri)."""
+    from datetime import date as D
+    d = D.fromisoformat(date)
+    o = (d - D.fromisoformat(EPOCH)).days
+    return {"carousel": CYCLE[(2 * o) % 3], "reel": CYCLE[(2 * o + 1) % 3], "story": CYCLE[(2 * o + 2) % 3],
+            "mood": BEAT_MOODS[o % 3], "book": o % 3 == 2, "promo": d.weekday() in (0, 2, 4),
+            "promo_variant": ((o // 7) * 3 + {0: 0, 2: 1, 4: 2}.get(d.weekday(), 0)) % 3}
+
+
+def apply_house_plan(day):
+    hp = house_plan(day["date"])
+    if "carousel" in day:
+        day["carousel"]["spec"]["theme"] = hp["carousel"]
+    if "story" in day:
+        day["story"]["spec"]["theme"] = hp["story"]
+    if "reel" in day:
+        beats = day["reel"]["beats"]
+        beats[0]["theme"], beats[0]["mood"] = hp["reel"], hp["mood"]
+        cta = beats[-1]
+        if hp["book"] and cta.get("kind") == "cta":
+            cta["book"], cta["vo"] = True, BOOK_VO
+    return hp
+
+
 def lint_reel_standard(r):
     """House standard for every Reel (owner decisions 22 Nov 2026). Returns a list of problems."""
     sys.path.insert(0, str(BUILD))
@@ -83,6 +114,10 @@ def lint_reel_standard(r):
             problems.append(f"beat {i} has no particles")
     if not any(b["kind"] == "quiz" for b in beats):
         problems.append("Reel needs at least one quiz")
+    if len(hook.get("title", "")) > 60:
+        problems.append("hook title over 60 characters: make it punchier")
+    if beats and beats[-1].get("book") and "link in bio" not in r.get("caption", "").lower():
+        problems.append("booking Reel: caption must say 'Book an intro session with Pietro: link in bio'")
     return problems
 
 
@@ -102,6 +137,8 @@ def main(argv):
     media.mkdir(exist_ok=True)
     captions.mkdir(exist_ok=True)
     queued = []
+    hp = apply_house_plan(day)
+    print(f"house plan {date}: {hp}")
 
     if "story" in day:
         s = day["story"]
@@ -158,6 +195,16 @@ def main(argv):
              "true" if any(b.get("vo") for b in r["beats"]) else "false", "--media", f"{name}.mp4",
              "--cover", f"{name}-cover.jpg", "--caption", str(cap.relative_to(REPO)),
              "--audio-kind", "native_recording", "--manifest", manifest])
+        queued.append(name)
+
+    if hp["promo"] and day.get("promo", True):
+        name = f"{date}-s-book"
+        with tempfile.TemporaryDirectory() as tmp:
+            pathlib.Path(tmp, "spec.json").write_text(json.dumps({"variant": hp["promo_variant"], "pietro": True}))
+            run(["python3", BUILD / "slides.py", "promo", pathlib.Path(tmp, "spec.json"), media, name])
+        run(["python3", BUILD / "schedule.py", "--type", "story", "--id", name, "--lesson", "IBI-BOOK", "--date", date,
+             "--approval", f"AUTO-{date}", "--ai-generated", "false", "--media", f"{name}.jpg", "--at", "18:30",
+             "--promo", "--manifest", manifest])
         queued.append(name)
 
     sys.path.insert(0, str(REPO))

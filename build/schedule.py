@@ -54,6 +54,7 @@ def main(argv=None):
     ap.add_argument("--requires")
     ap.add_argument("--at", help="HH:MM Eastern, overrides the format's slot (owner-approved only)")
     ap.add_argument("--cap-exempt", help="reason, e.g. 'owner approved 2 Reels on 22 Nov in chat'")
+    ap.add_argument("--promo", action="store_true", help="booking Story (owner decision 26 Nov: Mon/Wed/Fri 18:30)")
     ap.add_argument("--manifest", default=str(REPO / "posts.json"))
     a = ap.parse_args(argv)
 
@@ -70,7 +71,10 @@ def main(argv=None):
         if post["id"] == a.id:
             sys.exit(f"id {a.id} already exists (status {post['status']}); ids are never reused")
         same_day = datetime.fromisoformat(post["scheduled_utc"].replace("Z", "+00:00")).astimezone(EASTERN).date()
-        if post["type"] == a.type and same_day == day and post["status"] not in ("missed", "rejected") and not a.cap_exempt:
+        if a.promo and a.type != "story":
+            sys.exit("--promo is only for Stories")
+        if (post["type"] == a.type and same_day == day and post["status"] not in ("missed", "rejected")
+                and not a.cap_exempt and bool(post.get("promo")) == a.promo):
             sys.exit(f"{a.type} already planned for {day}: {post['id']}")
 
     hashes = {}
@@ -91,7 +95,7 @@ def main(argv=None):
         "audio_kind": a.audio_kind if a.type == "reel" else "none",
         "ai_generated": a.ai_generated == "true", "approval_id": a.approval,
         "asset_hashes": hashes, "requires_published": a.requires,
-        "cap_exempt": a.cap_exempt, "status": "approved", "container_id": None, "published_id": None,
+        "cap_exempt": a.cap_exempt, "promo": a.promo, "status": "approved", "container_id": None, "published_id": None,
         "published_at_utc": None, "attempts": 0, "last_error": None,
     }
     manifest["posts"].append(entry)
