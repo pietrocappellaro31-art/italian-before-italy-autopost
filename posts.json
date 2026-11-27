@@ -550,7 +550,7 @@
       "requires_published": null,
       "cap_exempt": null,
       "promo": true,
-      "status": "container_created",
+      "status": "publish_pending",
       "container_id": "17904095406395055",
       "published_id": null,
       "published_at_utc": null,
