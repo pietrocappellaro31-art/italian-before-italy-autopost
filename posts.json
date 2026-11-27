@@ -434,6 +434,125 @@
       "attempts": 1,
       "last_error": null,
       "last_attempt_utc": "2026-11-26T17:39:25+00:00"
+    },
+    {
+      "id": "2026-11-27-s-quiz-di-dove-sei",
+      "lesson_id": "IBI-L0015",
+      "type": "story",
+      "scheduled_utc": "2026-11-27T12:30:00Z",
+      "media": [
+        "2026-11-27-s-quiz-di-dove-sei.jpg"
+      ],
+      "caption_file": null,
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-27",
+      "asset_hashes": {
+        "2026-11-27-s-quiz-di-dove-sei.jpg": "f91db340ca92773d427ef0e86ff27f71711818034bbf079422c9eb9e30b3d642"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "promo": false,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-27-c-meeting-someone",
+      "lesson_id": "IBI-L0016",
+      "type": "carousel",
+      "scheduled_utc": "2026-11-27T13:10:00Z",
+      "media": [
+        "2026-11-27-c-meeting-someone-01.jpg",
+        "2026-11-27-c-meeting-someone-02.jpg",
+        "2026-11-27-c-meeting-someone-03.jpg",
+        "2026-11-27-c-meeting-someone-04.jpg",
+        "2026-11-27-c-meeting-someone-05.jpg",
+        "2026-11-27-c-meeting-someone-06.jpg",
+        "2026-11-27-c-meeting-someone-07.jpg"
+      ],
+      "caption_file": "build/captions/2026-11-27-c-meeting-someone.clean.txt",
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-27",
+      "asset_hashes": {
+        "2026-11-27-c-meeting-someone-01.jpg": "c782d1c4d503f345e2913414cc261ba9e0ba0a729b8b5b10fb65511bdb7633a2",
+        "2026-11-27-c-meeting-someone-02.jpg": "8680335a68a79b35290c793063b9eb4fa2c373877ccf26d37190e54f6259582e",
+        "2026-11-27-c-meeting-someone-03.jpg": "a3412eb32f2265359a834101a0a38872ea59baf2b891dd0a8008ddccaed3fc08",
+        "2026-11-27-c-meeting-someone-04.jpg": "77f02dd0a3d546a59bbbf4840da3c0630056ae3346a7dee963e991eccd6588a7",
+        "2026-11-27-c-meeting-someone-05.jpg": "8add3a756072a0977e1c9fb610a6acee08a70b2fea1fd542f145d6ee855c2205",
+        "2026-11-27-c-meeting-someone-06.jpg": "ca9c74465fdbbcb9904d01c09604a9c86f2dfa6b5e8a0159d6ad0dd19c552686",
+        "2026-11-27-c-meeting-someone-07.jpg": "86ad1d18b361192bc29d1633431f6517937d0605e027ce9d7ef8d17c753567cc",
+        "caption": "d8d32656e539209cadd47a745890d204f6cabea9a075af135dc90e0e0f634e95"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "promo": false,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-27-r-meeting-someone",
+      "lesson_id": "IBI-L0017",
+      "type": "reel",
+      "scheduled_utc": "2026-11-27T17:35:00Z",
+      "media": [
+        "2026-11-27-r-meeting-someone.mp4"
+      ],
+      "caption_file": "build/captions/2026-11-27-r-meeting-someone.clean.txt",
+      "cover": "2026-11-27-r-meeting-someone-cover.jpg",
+      "audio_kind": "native_recording",
+      "ai_generated": true,
+      "approval_id": "AUTO-2026-11-27",
+      "asset_hashes": {
+        "2026-11-27-r-meeting-someone.mp4": "7830eee3f8e66d3f7033324ca03e4eb0af469411b9495a00f7fcf965e4602121",
+        "2026-11-27-r-meeting-someone-cover.jpg": "229cb951ac8ef29f8237136ab1548fd305c0c83f99d0b7424517afd493b93506",
+        "caption": "9ae6869a3c51a848dd303d2819163d6a40b6aa2b694af28e0c0be66871e97b0f"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "promo": false,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-27-s-book",
+      "lesson_id": "IBI-BOOK",
+      "type": "story",
+      "scheduled_utc": "2026-11-27T23:30:00Z",
+      "media": [
+        "2026-11-27-s-book.jpg"
+      ],
+      "caption_file": null,
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-27",
+      "asset_hashes": {
+        "2026-11-27-s-book.jpg": "aa13120cf98ce462e3dcbf3d0d12ca059be62fd89fa9b09fe3272e9782c5caf8"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "promo": true,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
     }
   ]
 }
