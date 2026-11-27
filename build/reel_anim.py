@@ -60,6 +60,22 @@ CREDIT = "Italian: Pietro, native speaker (original recording)"
 CREDIT_VO = "Italian: Pietro, native speaker \u00b7 English narration: AI voice"
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 import icons  # noqa: E402
+import pietro as PIE  # noqa: E402
+
+PIETRO_ON = True        # cartoon Pietro in every Reel (owner 26 Nov 2026); set per Reel with beats[0]["pietro"]
+OUTFITS = {"barista": "barista", "waiter": "waiter", "cameriere": "waiter"}
+
+
+def draw_pietro(img, t, level, mode, cx, bottom, height, outfit="shirt", seed=0, enter=0.35):
+    """Cartoon Pietro. His mouth moves only with his own recording (level > 0 only while his clip plays)."""
+    st = PIE.animate(t, level, mode, speaking=level > 0.04, outfit=outfit, seed=seed)
+    im = PIE.render(st, height, t)
+    k = ease(t / enter) if enter else 1.0
+    squash = 1 + 0.025 * min(level, 1)
+    if squash > 1.005:
+        im = im.resize((im.width, int(im.height * squash)))
+    y = bottom - im.height + (1 - k) * height * 0.6 + 7 * math.sin(t * 3.1 + seed)
+    img.paste(im, (int(cx - im.width / 2), int(y)), im)
 
 AVATARS = {"barista": "barista", "you": "you", "waiter": "waiter", "cameriere": "waiter", "clerk": "clerk",
            "ticket office": "clerk", "pharmacist": "pharmacist", "farmacista": "pharmacist"}
@@ -361,12 +377,12 @@ def hook_title(d, text, hl, x, y, t, color, dim, dark):
     return y
 
 
-def sound_pill(img, t, dark):
+def sound_pill(img, t, dark, y0=1440):
     d = ImageDraw.Draw(img)
     f = font(SANS_SB, 38)
     label = "Sound on"
     w = d.textlength(label, font=f) + 130
-    x0, y0 = (W - w) / 2, 1440
+    x0 = (W - w) / 2
     q = ease((t - 0.3) / 0.3)
     col = CREAM if dark else BLUE
     d.rounded_rectangle([x0, y0 + 30 * (1 - q), x0 + w, y0 + 80 + 30 * (1 - q)], radius=40, outline=col, width=4)
@@ -409,8 +425,10 @@ def draw_beat(beat, t, dur, idx, n, level, img):
         y = hook_title(d, beat["title"], beat.get("hl", ""), M, 330, t, hfg, hdim, dark)
         if beat.get("sub") and t > 0.55:
             text_block(d, beat["sub"], font(SANS, 46), M, y + 20, W - 2 * M, hfg)
+        if PIETRO_ON:
+            draw_pietro(img, t, 0.0, "hook", W // 2, H + 40, 820, enter=0.45)
         if t > 0.3:
-            sound_pill(img, t, dark)
+            sound_pill(img, t, dark, 1040 if PIETRO_ON else 1440)
         if beat.get("art") == "cup":
             cup(d, W // 2, 1150, (t - 0.3) / 1.6, t, with_face=True, happy=t > 1.8)
         elif beat.get("art") == "pairs":
@@ -428,7 +446,10 @@ def draw_beat(beat, t, dur, idx, n, level, img):
                     double_highlight(d, wd, f, xx - 130, 1080, BLUE, (176, 106, 0))
             sticker(img, beat.get("pair_sticker", "hear the difference?"), W // 2, 1340, (t - 1.2) / 0.5, angle=4)
         elif beat.get("pics"):
-            fly_in(img, d, beat["pics"][:3], W // 2, 1150, 260 if len(beat["pics"]) < 3 else 220, t, 0.25)
+            if PIETRO_ON:
+                fly_in(img, d, beat["pics"][:3], W // 2, 880, 190, t, 0.25)
+            else:
+                fly_in(img, d, beat["pics"][:3], W // 2, 1150, 260 if len(beat["pics"]) < 3 else 220, t, 0.25)
     elif kind in ("listen", "turn"):
         tag(d, beat.get("label", "Listen" if kind == "listen" else "Your turn"), t / 0.4, BLUE, CREAM)
         f = font(SERIF, 96 if len(beat["it"]) < 40 else 78, 600)
@@ -444,18 +465,26 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             right = who == "you"
             ay = min(max(1310, y + 520), 1400)
             asz = 290 if ay <= 1310 else 240
-            if beat.get("label"):
+            if PIETRO_ON:
+                draw_pietro(img, t, level, "listen", 320, H + 30, 700, OUTFITS.get(who, "shirt"), seed=idx)
+                pics = beat.get("pics", [])[:2]
+                if pics:
+                    pics_row(img, pics, W - 260, 1420, 170, t, 0.5, gap=190)
+            elif beat.get("label"):
                 icons.avatar(img, who, W - 220 if right else 220, ay, asz, t / 0.35, t, talking=level > 0.25 and
                              int(t * 9) % 2 == 0)
-            pics = beat.get("pics", [])[:2]
+            pics = [] if PIETRO_ON else beat.get("pics", [])[:2]
             if pics:
                 pics_row(img, pics, 330 if right else W - 330, ay, 190 if asz == 290 else 160, t, 0.5)
         else:
             frac = 1 - min(t / dur, 1)
             ring(d, W // 2, y + 240, frac, BLUE, RULE)
             text_block(d, "Say it out loud", font(SANS_SB, 44), M, y + 410, W - 2 * M, NAVY, center=True)
-            icons.avatar(img, "you", 260, 1330, 260, t / 0.35, t, talking=int(t * 4) % 2 == 0)
-            icons.paste_icon(img, "mouth", W - 260, 1330, 210, (t - 0.3) / 0.4, t, wiggle=True)
+            if PIETRO_ON:
+                draw_pietro(img, t, 0.0, "turn", W // 2, H + 40, 760, seed=idx)
+            else:
+                icons.avatar(img, "you", 260, 1330, 260, t / 0.35, t, talking=int(t * 4) % 2 == 0)
+                icons.paste_icon(img, "mouth", W - 260, 1330, 210, (t - 0.3) / 0.4, t, wiggle=True)
     elif kind == "meaning":
         tag(d, "What it means", t / 0.4, BLUE, CREAM)
         y = text_block(d, beat["it"], font(SERIF, 72, 600), M, 330, W - 2 * M, BLUE)
@@ -467,7 +496,12 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             cup(d, 300, y + 330, (t - 0.2) / 1.2, t)
             cornetto(d, 760, y + 330, (t - 0.8) / 0.8)
         elif beat.get("pics"):
-            pics_row(img, beat["pics"][:3], W // 2, min(y + 300, 1300), 220, t, 0.6)
+            if PIETRO_ON:
+                pics_row(img, beat["pics"][:2], 300, min(y + 260, 1250), 190, t, 0.6, gap=210)
+            else:
+                pics_row(img, beat["pics"][:3], W // 2, min(y + 300, 1300), 220, t, 0.6)
+        if PIETRO_ON:
+            draw_pietro(img, t, 0.0, "thumbs" if idx % 2 else "idle", W - 300, H + 40, 640, seed=idx)
         for s in beat.get("stickers", []):
             sticker(img, s["text"], s.get("x", 760), y + s.get("dy", 220), (t - s.get("at", 1.2)) / 0.45,
                     angle=s.get("angle", -6))
@@ -483,7 +517,11 @@ def draw_beat(beat, t, dur, idx, n, level, img):
         wave(d, level, W // 2, 1060, t, BLUE)
         if beat.get("sticker"):
             sticker(img, beat["sticker"], W // 2, 1260, (t - 0.5) / 0.45, angle=beat.get("angle", -5))
-        if beat.get("pics"):
+        if PIETRO_ON:
+            draw_pietro(img, t, level, "listen", W - 270, H + 30, 560, seed=idx)
+            if beat.get("pics"):
+                pics_row(img, beat["pics"][:2], 300, 1440, 150, t, 0.4)
+        elif beat.get("pics"):
             pics_row(img, beat["pics"][:2], W // 2, 1420, 150, t, 0.4)
     elif kind == "quiz":
         tag(d, "Quiz", t / 0.4, GOLD, NAVY)
@@ -526,6 +564,9 @@ def draw_beat(beat, t, dur, idx, n, level, img):
         else:
             sticker(img, beat.get("explain", "correct!"), W // 2, 1080, (t - reveal) / 0.4, angle=-3)
             confetti(d, W // 2, 800, (t - reveal) / 1.2)
+        if PIETRO_ON:
+            mode = "celebrate" if t >= reveal else ("listen" if t < beat["_clipend"] else "think")
+            draw_pietro(img, t, level, mode, W // 2, H + 60, 600, seed=idx, enter=0.0)
     elif kind == "cta":
         book = beat.get("book")
         arch(d, W // 2, 700 if book else 760, 110, t / 0.9, hfg)
@@ -546,9 +587,15 @@ def draw_beat(beat, t, dur, idx, n, level, img):
                        fill=NAVY)
             y += 200
         if t > 1.3:
-            text_block(d, CREDIT_VO if beat.get("_ai_vo") else CREDIT, font(SANS, 34), M, max(y + 40, 1180),
+            text_block(d, CREDIT_VO if beat.get("_ai_vo") else CREDIT, font(SANS, 30), M, max(y + 30, 1160),
                        W - 2 * M, hfg, center=True)
-    d.text((M, 1560), HANDLE, font=font(SANS, 34), fill=fg)
+        if PIETRO_ON:
+            draw_pietro(img, t, 0.0, "book" if book else "wave", W // 2, H + 60, 520 if book else 600, seed=idx)
+    if PIETRO_ON:                                    # handle top-right, clear of the character
+        f = font(SANS, 30)
+        d.text((W - M - d.textlength(HANDLE, font=f), 112), HANDLE, font=f, fill=fg if not dark else CREAM)
+    else:
+        d.text((M, 1560), HANDLE, font=font(SANS, 34), fill=fg)
 
 
 def clip_path(clips, cid):
@@ -582,8 +629,9 @@ def loudnorm_filter(src):
 
 def main(argv):
     beats = json.loads(pathlib.Path(argv[1]).read_text())
-    global THEME
+    global THEME, PIETRO_ON
     THEME = beats[0].get("theme", "blue")
+    PIETRO_ON = beats[0].get("pietro", True)
     if THEME not in THEMES:
         raise SystemExit(f"unknown theme {THEME}")
     clips, out = pathlib.Path(argv[2]), pathlib.Path(argv[3])

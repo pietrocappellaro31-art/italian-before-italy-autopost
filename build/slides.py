@@ -27,6 +27,12 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from reel_anim import (BLUE, CREAM, GOLD, HANDLE, M, NAVY, PURE, RULE, SANS, SANS_SB, SERIF, THEMES, WHITE,  # noqa: E402
                        arch, bg_motion, font, sticker, wrap)
 import icons  # noqa: E402
+import pietro as PIE  # noqa: E402
+
+
+def put_pietro(img, cx, bottom, height, expr="grin", gesture="wave", phase=0.25):
+    im = PIE.render(PIE.State(expr=expr, gesture=gesture, phase=phase), height)
+    img.paste(im, (int(cx - im.width / 2), int(bottom - im.height)), im)
 
 THEME = "blue"
 PROMOS = [  # booking Stories (owner decision 26 Nov 2026). No prices, no "free", no promises.
@@ -105,9 +111,15 @@ def carousel_slide(s, idx, total, series):
                   limit=900 if has else limit)
         if s.get("sub"):
             y = block(d, s["sub"], font(SANS, 44), M, y + 30, width, hfg, limit=950 if has else limit)
-        if has:
-            pics(img, s["pics"], 400, 1110, 190)
-        sticker(img, "swipe", CW - 190, CH - 220, 1.0, angle=-6)
+        if s.get("pietro", True):
+            put_pietro(img, CW - 250, CH + 20, 470)
+            if has:
+                pics(img, s["pics"][:2], 250, 1090, 170)
+            sticker(img, "swipe", 230, CH - 150, 1.0, angle=-6)
+        else:
+            if has:
+                pics(img, s["pics"], 400, 1110, 190)
+            sticker(img, "swipe", CW - 190, CH - 220, 1.0, angle=-6)
     elif kind == "phrase":
         tag(d, s.get("label", "Say it like this"), M, 110, BLUE, CREAM)
         y = block(d, s["it"], font(SERIF, 88, 600), M, 300, width, BLUE, limit=limit)
@@ -152,15 +164,17 @@ def carousel_slide(s, idx, total, series):
     elif kind == "cta":
         arch(d, CW // 2, 470, 90, 1.0, hfg, 9)
         y = block(d, s["text"], font(SERIF, 84, 600), M, 600, width, hfg, center=True, limit=limit)
-        block(d, "New lesson every day · Pietro's native audio in the Reels", font(SANS, 34), M, y + 40, width,
-              hfg, center=True)
+        y = block(d, "New lesson every day · Pietro's native audio in the Reels", font(SANS, 34), M, y + 40, width,
+                  hfg, center=True)
+        if s.get("pietro", True) and y < CH - 420:
+            put_pietro(img, CW // 2, CH + 20, min(440, CH - y - 40), "grin", "thumbs")
     else:
         raise ValueError(f"unknown slide kind {kind}")
     if s.get("pics") and kind != "cover":            # small pictures in the top-right corner, clear of the text
         names = s["pics"][:2]
         for k, nm in enumerate(reversed(names)):
             icons.paste_icon(img, nm, CW - M - 60 - k * 140, 136, 120, 1.0, 0.0, bob=0)
-    frame(d, idx, total, dark, CW, CH)
+    frame(d, idx, total if not (kind == "cover" and s.get("pietro", True)) else 0, dark, CW, CH)
     return img
 
 
@@ -208,13 +222,14 @@ def promo_story(spec):
     tag(d, "1:1 with Pietro", M, 260, GOLD, NAVY)
     y = block(d, v["title"], font(SERIF, 104, 600), M, 360, width, CREAM, limit=900)
     y = block(d, v["body"], font(SANS, 50), M, y + 40, width, CREAM, gap=1.35, limit=1150)
-    if spec.get("pietro") and "pietro" in getattr(icons, "AVATAR_KINDS", ()):
-        icons.avatar(img, "pietro", SW // 2, 1330, 360, 1.0, 0.0)
+    if spec.get("pietro", True):
+        put_pietro(img, SW // 2 + 160, 1700, 560, "grin", "point_up", 0.1)
+        pics(img, v["pics"][:2], 260, 1300, 170)
     else:
         pics(img, v["pics"], SW // 2, 1300, 200)
-    d.rounded_rectangle([SW / 2 - 300, 1500, SW / 2 + 300, 1630], radius=65, fill=GOLD)
+    d.rounded_rectangle([SW / 2 - 300, 1520, SW / 2 + 300, 1650], radius=65, fill=GOLD, outline=NAVY, width=4)
     f = font(SANS_SB, 58)
-    d.text((SW / 2 - d.textlength("Link in bio", font=f) / 2, 1532), "Link in bio", font=f, fill=NAVY)
+    d.text((SW / 2 - d.textlength("Link in bio", font=f) / 2, 1552), "Link in bio", font=f, fill=NAVY)
     d.text((M, SH - 200), HANDLE, font=font(SANS, 34), fill=CREAM)
     return img
 
