@@ -49,6 +49,8 @@ def tint(bg, k=0.04):
     """A barely different shade of the background for moving shapes."""
     if bg == BLUE:
         return (12 + int(60 * k), 64 + int(60 * k), 148 + int(40 * k))
+    if bg == CREAM:                                  # warm sand tints on cream, never grey
+        return (int(242 - 60 * k), int(239 - 110 * k), int(230 - 260 * k))
     if bg == PURE:                                   # light blue tints on white, never grey
         return (int(255 - 420 * k), int(255 - 300 * k), int(255 - 120 * k))
     return tuple(int(c - c * k) for c in bg)
