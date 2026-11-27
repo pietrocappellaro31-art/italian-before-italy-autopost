@@ -454,12 +454,13 @@
       "requires_published": null,
       "cap_exempt": null,
       "promo": false,
-      "status": "approved",
-      "container_id": null,
+      "status": "container_created",
+      "container_id": "17903983083395055",
       "published_id": null,
       "published_at_utc": null,
-      "attempts": 0,
-      "last_error": null
+      "attempts": 1,
+      "last_error": null,
+      "last_attempt_utc": "2026-11-27T12:38:59+00:00"
     },
     {
       "id": "2026-11-27-c-meeting-someone",
