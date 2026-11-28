@@ -34,7 +34,7 @@ class State:
     look: tuple = (0.0, 0.0)
     gesture: str = "none"
     phase: float = 0.0
-    outfit: str = "shirt"
+    outfit: str = "sweater"   # owner's favourite (28 Nov): navy sweater, white collar, red bow tie
     tilt: float = 0.0
 
 
@@ -132,8 +132,11 @@ def head(st):
                       'transform="translate(0,-6)"/>' for h in HAIR_HI) + cap)
 
 
+NAVY_OUTFITS = ("sweater", "waiter", "barista")
+
+
 def body(st):
-    waiter = st.outfit == "waiter"
+    waiter = st.outfit in NAVY_OUTFITS
     s = (f'<path d="{SHIRT}" fill="{"#2B3350" if waiter else "url(#pin)"}" {L}/>'
          '<path d="M262,598 L338,598 L300,660 Z" fill="#E7AE86"/>'
          f'<path d="{COLLAR}" fill="#fff" {L}/>' + mirror(f'<path d="{COLLAR}" fill="#fff" {L}/>'))
@@ -181,7 +184,7 @@ def hand(cx, cy, ang, pose):
 
 
 def arms(st):
-    g, ph, w = st.gesture, st.phase, st.outfit == "waiter"
+    g, ph, w = st.gesture, st.phase, st.outfit in NAVY_OUTFITS
     wob = math.sin(ph * math.pi * 4)
     if g == "wave":
         return sleeve(196, 650, 120, 500, w) + hand(104, 456, -10 + 22 * wob, "open")
@@ -229,12 +232,12 @@ def render(st, height, t=0.0):
     return im
 
 
-def animate(t, talk_level=0.0, mode="idle", speaking=False, outfit="shirt", seed=0):
+def animate(t, talk_level=0.0, mode="idle", speaking=False, outfit="sweater", seed=0):
     """Lively default motion: blinks, eye darts, nods, brow pops, gestures by mode."""
     rnd = math.sin(seed * 12.9898) * 43758.5453 % 1
     talk_level = max(0.0, (talk_level - 0.22) / 0.78)      # ignore room noise and breaths
     speaking = speaking and talk_level > 0.05
-    blink = 1.0 if (t + rnd * 3) % 3.1 < 0.12 else 0.0
+    blink = 1.0 if t > 0.6 and (t + rnd * 3) % 3.1 < 0.12 else 0.0     # eyes open at every scene start
     look = (math.sin(t * 0.9 + seed) * 0.8, 0.0) if not speaking else (0.0, 0.0)
     tilt = 4 * math.sin(t * 1.7 + seed) + (3 * talk_level if speaking else 0)
     mouth_v = min(1.0, 0.25 + 0.75 * talk_level * (0.75 + 0.35 * abs(math.sin(t * 17)))) if speaking else 0.0
@@ -245,8 +248,8 @@ def animate(t, talk_level=0.0, mode="idle", speaking=False, outfit="shirt", seed
     brow = 0.7 * talk_level if speaking else (0.8 if mode in ("hook", "celebrate") else 0.2 * math.sin(t * 1.3))
     gesture = {"hook": "wave", "think": "think", "celebrate": "celebrate", "turn": "ear", "book": "point_up",
                "wave": "wave", "thumbs": "thumbs"}.get(mode, "none")
-    if mode == "listen" and not speaking and (t % 6) < 1.2:
-        expr = "wink" if (t % 12) < 6 else "grin"
+    if mode == "listen" and not speaking and t > 2.0 and 3.0 < (t % 7) < 3.6:   # never at the start of a scene
+        expr = "grin"
     if mode == "think" and (t % 2.5) < 0.4:
         expr = "surprised"
     return State(mouth_v, expr, blink, brow, look, gesture, (t % 1.5) / 1.5, outfit, tilt)
@@ -254,10 +257,10 @@ def animate(t, talk_level=0.0, mode="idle", speaking=False, outfit="shirt", seed
 
 if __name__ == "__main__":
     import sys
-    poses = [("smile", "none", 0, "shirt"), ("grin", "wave", 0, "shirt"), ("talk", "none", 0.4, "shirt"),
-             ("talk", "none", 1.0, "barista"), ("think", "think", 0, "shirt"), ("surprised", "none", 0, "shirt"),
-             ("grin", "celebrate", 0, "shirt"), ("smile", "ear", 0, "shirt"), ("grin", "point_up", 0, "shirt"),
-             ("wink", "thumbs", 0, "waiter")]
+    poses = [("smile", "none", 0, "sweater"), ("grin", "wave", 0, "sweater"), ("talk", "none", 0.4, "sweater"),
+             ("talk", "none", 1.0, "barista"), ("think", "think", 0, "sweater"), ("surprised", "none", 0, "sweater"),
+             ("grin", "celebrate", 0, "sweater"), ("smile", "ear", 0, "sweater"), ("grin", "point_up", 0, "sweater"),
+             ("grin", "thumbs", 0, "sweater")]
     sheet = Image.new("RGB", (5 * 420, 2 * 450), (242, 239, 230))
     for k, (e, g, m, o) in enumerate(poses):
         im = render(State(mouth=m, expr=e, gesture=g, outfit=o, brow=0.6 if e == "surprised" else 0), 430)

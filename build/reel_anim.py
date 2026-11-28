@@ -66,7 +66,7 @@ PIETRO_ON = True        # cartoon Pietro in every Reel (owner 26 Nov 2026); set 
 OUTFITS = {"barista": "barista", "waiter": "waiter", "cameriere": "waiter"}
 
 
-def draw_pietro(img, t, level, mode, cx, bottom, height, outfit="shirt", seed=0, enter=0.35):
+def draw_pietro(img, t, level, mode, cx, bottom, height, outfit="sweater", seed=0, enter=0.35):
     """Cartoon Pietro. His mouth moves only with his own recording (level > 0 only while his clip plays)."""
     st = PIE.animate(t, level, mode, speaking=level > 0.04, outfit=outfit, seed=seed)
     im = PIE.render(st, height, t)
@@ -466,7 +466,7 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             ay = min(max(1310, y + 520), 1400)
             asz = 290 if ay <= 1310 else 240
             if PIETRO_ON:
-                draw_pietro(img, t, level, "listen", 320, H + 30, 700, OUTFITS.get(who, "shirt"), seed=idx)
+                draw_pietro(img, t, level, "listen", 320, H + 30, 700, OUTFITS.get(who, "sweater"), seed=idx)
                 pics = beat.get("pics", [])[:2]
                 if pics:
                     pics_row(img, pics, W - 260, 1420, 170, t, 0.5, gap=190)
