@@ -67,15 +67,19 @@ def main(argv=None):
     else:
         scheduled = slot_utc(day, a.type)
 
+    per_day = {"story": 1, "carousel": 2, "reel": 2}     # owner decision 28 Nov 2026 (promo Story counted apart)
+    if a.promo and a.type != "story":
+        sys.exit("--promo is only for Stories")
+    same = []
     for post in manifest["posts"]:
         if post["id"] == a.id:
             sys.exit(f"id {a.id} already exists (status {post['status']}); ids are never reused")
         same_day = datetime.fromisoformat(post["scheduled_utc"].replace("Z", "+00:00")).astimezone(EASTERN).date()
-        if a.promo and a.type != "story":
-            sys.exit("--promo is only for Stories")
         if (post["type"] == a.type and same_day == day and post["status"] not in ("missed", "rejected")
-                and not a.cap_exempt and bool(post.get("promo")) == a.promo):
-            sys.exit(f"{a.type} already planned for {day}: {post['id']}")
+                and not post.get("cap_exempt") and bool(post.get("promo")) == a.promo):
+            same.append(post["id"])
+    if not a.cap_exempt and len(same) >= (1 if a.promo else per_day[a.type]):
+        sys.exit(f"{a.type} already planned for {day}: {', '.join(same)}")
 
     hashes = {}
     for name in a.media + ([a.cover] if a.cover else []):

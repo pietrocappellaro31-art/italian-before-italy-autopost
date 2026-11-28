@@ -52,10 +52,11 @@ MANIFEST = os.path.join(HERE, "posts.json")
 
 # ---------------------------------------------------------------- fixed launch rules (owner decision)
 FORMATS = ("carousel", "reel", "story")
-MAX_PER_FORMAT_PER_DAY = 1
-MAX_PER_DAY = 3
-MAX_PER_WEEK = 24            # 21 regular + 3 booking Stories (owner decision 26 Nov 2026)
-PROMO_DAY_TOTAL = 4          # a booking Story may be the 4th post of a day, at most 1 per day
+# Owner decision 28 Nov 2026: 2 Reels + 2 carousels + 1 Story a day (plus the Mon/Wed/Fri booking Story)
+MAX_PER_FORMAT_PER_DAY = {"story": 1, "carousel": 2, "reel": 2}
+MAX_PER_DAY = 5
+MAX_PER_WEEK = 38            # 35 regular + 3 booking Stories
+PROMO_DAY_TOTAL = 6          # a booking Story may be the 6th post of a day, at most 1 per day
 GRACE_HOURS = 8            # GitHub cron is unreliable (sister measured gaps of up to 10 h); after this, a slot is missed
 MAX_ATTEMPTS = 3           # then the entry is blocked and waits for a person
 
@@ -299,7 +300,8 @@ def select_due(manifest, now):
             day_total += 1
             week_total += 1
             continue
-        if ((day_format[post["type"]] >= MAX_PER_FORMAT_PER_DAY and not exempt) or regular_today >= MAX_PER_DAY
+        if ((day_format[post["type"]] >= MAX_PER_FORMAT_PER_DAY[post["type"]] and not exempt)
+                or regular_today >= MAX_PER_DAY
                 or week_total >= MAX_PER_WEEK):
             log(f"Cap reached, holding {post['id']}")
             continue

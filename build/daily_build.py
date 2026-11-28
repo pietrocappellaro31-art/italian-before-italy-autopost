@@ -8,10 +8,13 @@ DAY_SPEC (written by the daily scheduled session in the private repo, specs/YYYY
   "date": "2026-11-23",
   "reel":     {"id_slug": "bar-dialogue", "lesson": "IBI-L0003", "beats": [...reel beats...], "caption": "..."},
   "carousel": {"id_slug": "cafe-phrases", "lesson": "IBI-L0004", "spec": {...slides spec...}, "caption": "..."},
-  "story":    {"id_slug": "quiz", "lesson": "IBI-L0005", "spec": {...story spec...}}
+  "story":    {"id_slug": "quiz", "lesson": "IBI-L0005", "spec": {...story spec...}},
+  "carousel2": {...same as carousel, a second, different lesson...},          # 15:10 ET
+  "reel2":     {...same as reel, kind "review": ONLY clips already used in earlier days' Reels...}   # 19:05 ET
 }
-Any of the three may be omitted (a gate failed). Renders into media/, writes captions to build/captions/,
-lints captions, queues each post at its fixed slot (Story 07:30, Carousel 08:10, Reel 12:35 ET) and
+Owner decision 28 Nov 2026: 2 Reels + 2 carousels + 1 Story a day (+ booking Story Mon/Wed/Fri 18:30).
+Any part may be omitted (a gate failed). Renders into media/, writes captions to build/captions/,
+lints captions, queues each post at its slot (Story 07:30, Carousel 08:10 and 15:10, Reel 12:35 and 19:05 ET) and
 validates the manifest. Nothing is published here: GitHub Actions publishes when the slot comes.
 Exit code 0 = all requested posts queued.
 """
@@ -57,34 +60,63 @@ BEAT_MOODS = ["pop", "bounce", "lofi"]      # upbeat original music, rotated by 
 BOOK_VO = "Want to speak like this? Book an intro session with Pietro. Link in bio."
 
 
+SECOND_SLOTS = {"carousel2": "15:10", "reel2": "19:05"}
+
+
 def house_plan(date):
-    """Deterministic per-day choices: colours, music, booking ending (every 3rd Reel), booking Story (Mon/Wed/Fri)."""
+    """Deterministic per-day choices. Grid order per day: carousel 08:10, Reel 12:35, carousel 15:10, Reel 19:05;
+    colours rotate blue/white/cream across that order; every 3rd Reel ends with the booking CTA; Mon/Wed/Fri get
+    the booking Story."""
     from datetime import date as D
     d = D.fromisoformat(date)
     o = (d - D.fromisoformat(EPOCH)).days
-    return {"carousel": CYCLE[(2 * o) % 3], "reel": CYCLE[(2 * o + 1) % 3], "story": CYCLE[(2 * o + 2) % 3],
-            "mood": BEAT_MOODS[o % 3], "book": o % 3 == 2, "promo": d.weekday() in (0, 2, 4),
+    g = 4 * o
+    return {"carousel": CYCLE[g % 3], "reel": CYCLE[(g + 1) % 3], "carousel2": CYCLE[(g + 2) % 3],
+            "reel2": CYCLE[(g + 3) % 3], "story": CYCLE[o % 3],
+            "mood": BEAT_MOODS[(2 * o) % 3], "mood2": BEAT_MOODS[(2 * o + 1) % 3],
+            "book": (2 * o) % 3 == 2, "book2": (2 * o + 1) % 3 == 2,
+            "promo": d.weekday() in (0, 2, 4),
             "promo_variant": ((o // 7) * 3 + {0: 0, 2: 1, 4: 2}.get(d.weekday(), 0)) % 3}
 
 
 def apply_house_plan(day):
     hp = house_plan(day["date"])
-    if "carousel" in day:
-        day["carousel"]["spec"]["theme"] = hp["carousel"]
-        for sl in day["carousel"]["spec"]["slides"]:       # cartoon Pietro is always on (owner 26-28 Nov)
-            sl.pop("pietro", None)
+    for key in ("carousel", "carousel2"):
+        if key in day:
+            day[key]["spec"]["theme"] = hp[key]
+            for sl in day[key]["spec"]["slides"]:          # cartoon Pietro is always on (owner 26-28 Nov)
+                sl.pop("pietro", None)
     if "story" in day:
         day["story"]["spec"]["theme"] = hp["story"]
-    if "reel" in day:
-        beats = day["reel"]["beats"]
-        beats[0]["theme"], beats[0]["mood"] = hp["reel"], hp["mood"]
-        beats[0]["pietro"] = True                          # always on; outfit is his navy sweater by default
-        for b in beats:
-            b.pop("outfit", None)
-        cta = beats[-1]
-        if hp["book"] and cta.get("kind") == "cta":
-            cta["book"], cta["vo"] = True, BOOK_VO
+    for key, mood, book in (("reel", "mood", "book"), ("reel2", "mood2", "book2")):
+        if key in day:
+            beats = day[key]["beats"]
+            beats[0]["theme"], beats[0]["mood"] = hp[key], hp[mood]
+            beats[0]["pietro"] = True                      # always on; outfit is his navy sweater by default
+            for b in beats:
+                b.pop("outfit", None)
+            cta = beats[-1]
+            if hp[book] and cta.get("kind") == "cta":
+                cta["book"], cta["vo"] = True, BOOK_VO
+            elif cta.get("kind") == "cta":
+                cta.pop("book", None)
     return hp
+
+
+def earlier_reel_clips(clips_dir, date):
+    """Clips used in Reels of days before `date` (from the private repo's specs/). Review Reels may use only these."""
+    specs = pathlib.Path(clips_dir).resolve().parent.parent / "specs"
+    used = set()
+    for f in sorted(specs.glob("*.json")):
+        if f.stem >= date:
+            continue
+        sp = json.loads(f.read_text())
+        for key in ("reel", "reel2"):
+            for b in sp.get(key, {}).get("beats", []):
+                for c in [b.get("clip")] + [o.get("clip") for o in b.get("pairs", []) if isinstance(o, dict)]:
+                    if c:
+                        used.add(c)
+    return used
 
 
 def lint_graphics(day):
@@ -92,13 +124,15 @@ def lint_graphics(day):
     sys.path.insert(0, str(BUILD))
     import icons
     problems = []
-    if "carousel" in day:
-        for i, sl in enumerate(day["carousel"]["spec"]["slides"]):
+    for key in ("carousel", "carousel2"):
+        if key not in day:
+            continue
+        for i, sl in enumerate(day[key]["spec"]["slides"]):
             if sl["kind"] in ("cover", "phrase", "list", "compare") and not sl.get("pics"):
-                problems.append(f"carousel slide {i + 1} ({sl['kind']}) has no pics")
+                problems.append(f"{key} slide {i + 1} ({sl['kind']}) has no pics")
             for nm in sl.get("pics", []):
                 if nm not in icons.ICONS:
-                    problems.append(f"carousel slide {i + 1}: unknown picture '{nm}'")
+                    problems.append(f"{key} slide {i + 1}: unknown picture '{nm}'")
     if "story" in day:
         pic = day["story"]["spec"].get("pic")
         if not pic:
@@ -179,8 +213,10 @@ def main(argv):
              "--approval", f"AUTO-{date}", "--ai-generated", "false", "--media", f"{name}.jpg", "--manifest", manifest])
         queued.append(name)
 
-    if "carousel" in day:
-        c = day["carousel"]
+    for ckey in ("carousel", "carousel2"):
+        if ckey not in day:
+            continue
+        c = day[ckey]
         name = f"{date}-c-{c['id_slug']}"
         problems = lint_caption(c["caption"])
         if problems:
@@ -192,14 +228,22 @@ def main(argv):
             files = run(["python3", BUILD / "slides.py", "carousel", pathlib.Path(tmp, "spec.json"), media, name]).split()
         run(["python3", BUILD / "schedule.py", "--type", "carousel", "--id", name, "--lesson", c["lesson"], "--date", date,
              "--approval", f"AUTO-{date}", "--ai-generated", "false", "--media", *files,
-             "--caption", str(cap.relative_to(REPO)), "--manifest", manifest])
+             "--caption", str(cap.relative_to(REPO)), "--manifest", manifest]
+            + (["--at", SECOND_SLOTS[ckey]] if ckey in SECOND_SLOTS else []))
         queued.append(name)
 
-    if "reel" in day:
-        r = day["reel"]
+    for rkey in ("reel", "reel2"):
+        if rkey not in day:
+            continue
+        r = day[rkey]
         std = lint_reel_standard(r)
+        if rkey == "reel2":                                # review Reel: only phrases already taught in earlier Reels
+            seen = earlier_reel_clips(clips, date)
+            fresh = sorted({b["clip"] for b in r["beats"] if b.get("clip")} - seen)
+            if fresh:
+                std.append(f"reel2 is a review Reel but uses clips not yet taught in an earlier Reel: {fresh}")
         if std:
-            raise SystemExit("Reel standard not met:\n  " + "\n  ".join(std))
+            raise SystemExit(f"Reel standard not met ({rkey}):\n  " + "\n  ".join(std))
         if any(b.get("vo") for b in r["beats"]) and not (os.environ.get("KOKORO_DIR") and os.environ.get("SHERPA_DIR")):
             print("WARNING: English narrator not set up; building this Reel without narration")
             for b in r["beats"]:
@@ -223,7 +267,8 @@ def main(argv):
              "--approval", f"AUTO-{date}", "--ai-generated",
              "true" if any(b.get("vo") for b in r["beats"]) else "false", "--media", f"{name}.mp4",
              "--cover", f"{name}-cover.jpg", "--caption", str(cap.relative_to(REPO)),
-             "--audio-kind", "native_recording", "--manifest", manifest])
+             "--audio-kind", "native_recording", "--manifest", manifest]
+            + (["--at", SECOND_SLOTS[rkey]] if rkey in SECOND_SLOTS else []))
         queued.append(name)
 
     if hp["promo"] and day.get("promo", True):

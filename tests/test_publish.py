@@ -115,10 +115,13 @@ class Scheduling(Base):
         self.assertEqual(schedule.slot_utc(date(2026, 11, 1), "story"), "2026-11-01T12:30:00Z")
         self.assertEqual(schedule.slot_utc(date(2027, 3, 14), "reel"), "2027-03-14T16:35:00Z")
 
-    def test_one_per_format_per_day(self):
-        m = manifest(post("c1", "carousel", "2026-12-01T13:10:00Z"), post("c2", "carousel", "2026-12-01T13:11:00Z"))
+    def test_per_format_caps_per_day(self):
+        # owner decision 28 Nov 2026: 2 carousels, 2 Reels, 1 Story a day
+        m = manifest(post("c1", "carousel", "2026-12-01T13:10:00Z"), post("c2", "carousel", "2026-12-01T13:11:00Z"),
+                     post("c3", "carousel", "2026-12-01T13:12:00Z"), post("s1", "story", "2026-12-01T12:30:00Z"),
+                     post("s2", "story", "2026-12-01T12:31:00Z"))
         due, _ = publish.select_due(m, NOW)
-        self.assertEqual([p["id"] for p in due], ["c1"])
+        self.assertEqual(sorted(p["id"] for p in due), ["c1", "c2", "s1"])
 
     def test_cap_exempt_second_reel(self):
         m = manifest(post("r1", "reel", "2026-12-01T17:35:00Z"), post("r2", "reel", "2026-12-01T17:40:00Z", cap_exempt="owner"))
@@ -144,7 +147,7 @@ class Scheduling(Base):
 
     def test_weekly_cap(self):
         done = [post(f"p{i}", "story", "2026-11-30T12:30:00Z", status="published", published_id=str(i),
-                     published_at_utc="2026-11-30T13:00:00+00:00") for i in range(24)]
+                     published_at_utc="2026-11-30T13:00:00+00:00") for i in range(38)]
         m = manifest(*done, post("c", "carousel", "2026-12-01T13:10:00Z"))
         due, _ = publish.select_due(m, NOW)
         self.assertEqual(due, [])
