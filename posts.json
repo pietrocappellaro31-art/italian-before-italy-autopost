@@ -652,6 +652,73 @@
       "published_at_utc": null,
       "attempts": 0,
       "last_error": null
+    },
+    {
+      "id": "2026-11-28-c-greetings-time-of-day",
+      "lesson_id": "IBI-C1128B",
+      "type": "carousel",
+      "scheduled_utc": "2026-11-28T20:10:00Z",
+      "media": [
+        "2026-11-28-c-greetings-time-of-day-01.jpg",
+        "2026-11-28-c-greetings-time-of-day-02.jpg",
+        "2026-11-28-c-greetings-time-of-day-03.jpg",
+        "2026-11-28-c-greetings-time-of-day-04.jpg",
+        "2026-11-28-c-greetings-time-of-day-05.jpg",
+        "2026-11-28-c-greetings-time-of-day-06.jpg",
+        "2026-11-28-c-greetings-time-of-day-07.jpg"
+      ],
+      "caption_file": "build/captions/2026-11-28-c-greetings-time-of-day.clean.txt",
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-28",
+      "asset_hashes": {
+        "2026-11-28-c-greetings-time-of-day-01.jpg": "d739778dfed006b6713c923ee703c8c41f24da2e544d39eb4b9e8c00bc79136f",
+        "2026-11-28-c-greetings-time-of-day-02.jpg": "dcc1322b327a448d897072fdb6fc841340d9215aa481fc894a8ef93258490ae7",
+        "2026-11-28-c-greetings-time-of-day-03.jpg": "b05bc6991212f71d47b1824861c58826e88079f13cdb64fa1f052359b262c84f",
+        "2026-11-28-c-greetings-time-of-day-04.jpg": "8b4aca843344f06b896197b5fe3cb908487c967236b22e860ac98d233a804c9d",
+        "2026-11-28-c-greetings-time-of-day-05.jpg": "7f996431198aded4a866968e288577e4b23cf70cdf5a7b53e6356fbe539a8fa1",
+        "2026-11-28-c-greetings-time-of-day-06.jpg": "684b300f4f33ef6e45cb7ede84a8d7f0c9b7d5bf50426b095bc35a877d36630a",
+        "2026-11-28-c-greetings-time-of-day-07.jpg": "35fcb36507342e3ab1136a0fd0397657f7909a6ea8a4a1af6d22c8baa4fa69ee",
+        "caption": "7cdc8de064d5303fefd6d766983ba359ac61e55f33e56e099acb57d91ebd7035"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "promo": false,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-28-r-week1-review",
+      "lesson_id": "IBI-R1128",
+      "type": "reel",
+      "scheduled_utc": "2026-11-29T00:05:00Z",
+      "media": [
+        "2026-11-28-r-week1-review.mp4"
+      ],
+      "caption_file": "build/captions/2026-11-28-r-week1-review.clean.txt",
+      "cover": "2026-11-28-r-week1-review-cover.jpg",
+      "audio_kind": "native_recording",
+      "ai_generated": true,
+      "approval_id": "AUTO-2026-11-28",
+      "asset_hashes": {
+        "2026-11-28-r-week1-review.mp4": "a3919d929d5dbc43cab8c30b2c29ce320b3027633cbe1c3d5f5aa6ec7a22eec7",
+        "2026-11-28-r-week1-review-cover.jpg": "5b1afee139ae0507e9e2cf380fa417ac70aba9e25400c2b6e930f3fb80239352",
+        "caption": "9cd156fd423a220f19ad6166c1327a21c690c107f9487470ecec846935c205a3"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "promo": false,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
     }
   ]
 }
