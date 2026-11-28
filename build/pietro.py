@@ -67,8 +67,8 @@ def mirror(s):
 
 
 def eye(cx, cy, st, side):
-    closed = st.blink >= 0.5 or (st.expr == "wink" and side == 1)
-    if st.expr == "grin" and st.mouth < 0.05:            # joyful ^ ^ eyes
+    closed = False                                        # owner (28 Nov): eyes always open...
+    if st.gesture == "celebrate":                         # ...except the joyful ^ ^ eyes when he celebrates
         return (f'<path d="M{cx - 24},{cy + 8} C{cx - 12},{cy - 16} {cx + 12},{cy - 16} {cx + 24},{cy + 8}" '
                 f'fill="none" stroke="{LINE}" stroke-width="7" stroke-linecap="round"/>')
     if closed:
@@ -237,7 +237,7 @@ def animate(t, talk_level=0.0, mode="idle", speaking=False, outfit="sweater", se
     rnd = math.sin(seed * 12.9898) * 43758.5453 % 1
     talk_level = max(0.0, (talk_level - 0.22) / 0.78)      # ignore room noise and breaths
     speaking = speaking and talk_level > 0.05
-    blink = 1.0 if t > 0.6 and (t + rnd * 3) % 3.1 < 0.12 else 0.0     # eyes open at every scene start
+    blink = 0.0                                           # no blinks: eyes stay open (owner, 28 Nov)
     look = (math.sin(t * 0.9 + seed) * 0.8, 0.0) if not speaking else (0.0, 0.0)
     tilt = 4 * math.sin(t * 1.7 + seed) + (3 * talk_level if speaking else 0)
     mouth_v = min(1.0, 0.25 + 0.75 * talk_level * (0.75 + 0.35 * abs(math.sin(t * 17)))) if speaking else 0.0
@@ -248,7 +248,7 @@ def animate(t, talk_level=0.0, mode="idle", speaking=False, outfit="sweater", se
     brow = 0.7 * talk_level if speaking else (0.8 if mode in ("hook", "celebrate") else 0.2 * math.sin(t * 1.3))
     gesture = {"hook": "wave", "think": "think", "celebrate": "celebrate", "turn": "ear", "book": "point_up",
                "wave": "wave", "thumbs": "thumbs"}.get(mode, "none")
-    if mode == "listen" and not speaking and t > 2.0 and 3.0 < (t % 7) < 3.6:   # never at the start of a scene
+    if mode == "listen" and not speaking and t > 2.0 and 3.0 < (t % 7) < 3.6:
         expr = "grin"
     if mode == "think" and (t % 2.5) < 0.4:
         expr = "surprised"
