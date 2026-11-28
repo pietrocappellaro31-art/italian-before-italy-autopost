@@ -593,7 +593,12 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             draw_pietro(img, t, 0.0, "book" if book else "wave", W // 2, H + 60, 520 if book else 600, seed=idx)
     if PIETRO_ON:                                    # handle top-right, clear of the character
         f = font(SANS, 30)
-        d.text((W - M - d.textlength(HANDLE, font=f), 112), HANDLE, font=f, fill=fg if not dark else CREAM)
+        # in clear space: right side of the label row, below the progress bar (never on the blue lines)
+        label = (beat.get("series") or beat.get("label") or "") if kind != "cta" else ""
+        lw = d.textlength(label.upper(), font=font(SANS_SB, 34)) + 40 if label else 0
+        hx = W - M - d.textlength(HANDLE, font=f)
+        hy = 184 if M + lw + 30 < hx else 248
+        d.text((hx, hy), HANDLE, font=f, fill=fg if not dark else CREAM)
     else:
         d.text((M, 1560), HANDLE, font=font(SANS, 34), fill=fg)
 
