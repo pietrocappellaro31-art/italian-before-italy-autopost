@@ -646,7 +646,7 @@
       "requires_published": null,
       "cap_exempt": null,
       "promo": false,
-      "status": "container_created",
+      "status": "publish_pending",
       "container_id": "17904262851395055",
       "published_id": null,
       "published_at_utc": null,
