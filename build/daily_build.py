@@ -10,7 +10,7 @@ DAY_SPEC (written by the daily scheduled session in the private repo, specs/YYYY
   "carousel": {"id_slug": "cafe-phrases", "lesson": "IBI-L0004", "spec": {...slides spec...}, "caption": "..."},
   "story":    {"id_slug": "quiz", "lesson": "IBI-L0005", "spec": {...story spec...}},
   "carousel2": {...same as carousel, a second, different lesson...},          # 15:10 ET
-  "reel2":     {...same as reel, kind "review": ONLY clips already used in earlier days' Reels...}   # 19:05 ET
+  "reel2":     {...same as reel, from the calendar day's `second` lesson...}   # 19:05 ET
 }
 Owner decision 28 Nov 2026: 2 Reels + 2 carousels + 1 Story a day (+ booking Story Mon/Wed/Fri 18:30).
 Any part may be omitted (a gate failed). Renders into media/, writes captions to build/captions/,
@@ -101,6 +101,30 @@ def apply_house_plan(day):
             elif cta.get("kind") == "cta":
                 cta.pop("book", None)
     return hp
+
+
+def calendar_clips(clips_dir, date):
+    """Allowed clips for (reel, reel2) on `date` from the private calendar's groups, or (None, None) if unknown."""
+    cal = pathlib.Path(clips_dir).resolve().parent.parent / "plans" / "calendar.json"
+    if not cal.is_file():
+        return None, None
+    c = json.loads(cal.read_text())
+    day = next((d for d in c["days"] if d["date"] == date), None)
+    if not day:
+        return None, None
+
+    def allowed(groups):
+        return {cid for g in groups for cid in c["groups"].get(g, [])}
+    return allowed(day.get("groups", [])), (allowed(day["second"]["groups"]) if day.get("second") else set())
+
+
+def reel_clips(r):
+    out = set()
+    for b in r["beats"]:
+        for cid in [b.get("clip")] + [o.get("clip") for o in b.get("pairs", []) if isinstance(o, dict)]:
+            if cid:
+                out.add(cid)
+    return out
 
 
 def earlier_reel_clips(clips_dir, date):
@@ -237,11 +261,11 @@ def main(argv):
             continue
         r = day[rkey]
         std = lint_reel_standard(r)
-        if rkey == "reel2":                                # review Reel: only phrases already taught in earlier Reels
-            seen = earlier_reel_clips(clips, date)
-            fresh = sorted({b["clip"] for b in r["beats"] if b.get("clip")} - seen)
-            if fresh:
-                std.append(f"reel2 is a review Reel but uses clips not yet taught in an earlier Reel: {fresh}")
+        allowed = calendar_clips(clips, date)[0 if rkey == "reel" else 1]
+        if allowed is not None:                            # each Reel uses only its calendar lesson's clips
+            outside = sorted(reel_clips(r) - allowed)
+            if outside:
+                std.append(f"{rkey} uses clips outside its calendar lesson: {outside}")
         if std:
             raise SystemExit(f"Reel standard not met ({rkey}):\n  " + "\n  ".join(std))
         if any(b.get("vo") for b in r["beats"]) and not (os.environ.get("KOKORO_DIR") and os.environ.get("SHERPA_DIR")):
