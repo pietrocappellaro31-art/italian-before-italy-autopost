@@ -217,6 +217,9 @@ def svg(st, bounce=0.0):
 
 @lru_cache(maxsize=2048)
 def _raster(st, bounce, height):
+    import shutil
+    if not shutil.which("rsvg-convert"):
+        raise SystemExit("cartoon Pietro needs rsvg-convert (librsvg2-bin): install it, never skip the character")
     png = subprocess.run(["rsvg-convert", "-h", str(height), "-f", "png"], input=svg(st, bounce).encode(),
                          capture_output=True, check=True).stdout
     return Image.open(io.BytesIO(png)).convert("RGBA")

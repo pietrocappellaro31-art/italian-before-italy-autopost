@@ -71,15 +71,41 @@ def apply_house_plan(day):
     hp = house_plan(day["date"])
     if "carousel" in day:
         day["carousel"]["spec"]["theme"] = hp["carousel"]
+        for sl in day["carousel"]["spec"]["slides"]:       # cartoon Pietro is always on (owner 26-28 Nov)
+            sl.pop("pietro", None)
     if "story" in day:
         day["story"]["spec"]["theme"] = hp["story"]
     if "reel" in day:
         beats = day["reel"]["beats"]
         beats[0]["theme"], beats[0]["mood"] = hp["reel"], hp["mood"]
+        beats[0]["pietro"] = True                          # always on; outfit is his navy sweater by default
+        for b in beats:
+            b.pop("outfit", None)
         cta = beats[-1]
         if hp["book"] and cta.get("kind") == "cta":
             cta["book"], cta["vo"] = True, BOOK_VO
     return hp
+
+
+def lint_graphics(day):
+    """Carousel and Story graphics standard (owner 26 Nov 2026)."""
+    sys.path.insert(0, str(BUILD))
+    import icons
+    problems = []
+    if "carousel" in day:
+        for i, sl in enumerate(day["carousel"]["spec"]["slides"]):
+            if sl["kind"] in ("cover", "phrase", "list", "compare") and not sl.get("pics"):
+                problems.append(f"carousel slide {i + 1} ({sl['kind']}) has no pics")
+            for nm in sl.get("pics", []):
+                if nm not in icons.ICONS:
+                    problems.append(f"carousel slide {i + 1}: unknown picture '{nm}'")
+    if "story" in day:
+        pic = day["story"]["spec"].get("pic")
+        if not pic:
+            problems.append("story has no pic")
+        elif pic not in icons.ICONS:
+            problems.append(f"story: unknown picture '{pic}'")
+    return problems
 
 
 def lint_reel_standard(r):
@@ -138,6 +164,9 @@ def main(argv):
     captions.mkdir(exist_ok=True)
     queued = []
     hp = apply_house_plan(day)
+    gfx = lint_graphics(day)
+    if gfx:
+        raise SystemExit("Graphics standard not met:\n  " + "\n  ".join(gfx))
     print(f"house plan {date}: {hp}")
 
     if "story" in day:
