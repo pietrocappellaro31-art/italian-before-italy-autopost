@@ -223,7 +223,7 @@ def promo_story(spec):
     y = block(d, v["title"], font(SERIF, 104, 600), M, 360, width, CREAM, limit=900)
     y = block(d, v["body"], font(SANS, 50), M, y + 40, width, CREAM, gap=1.35, limit=1150)
     if spec.get("pietro", True):
-        put_pietro(img, SW // 2 + 160, 1700, 560, "grin", "point_up", 0.1)
+        put_pietro(img, SW // 2 + 150, 1510, 560, "grin", "point_up", 0.1)
         pics(img, v["pics"][:2], 260, 1300, 170)
     else:
         pics(img, v["pics"], SW // 2, 1300, 200)
