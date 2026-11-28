@@ -557,6 +557,99 @@
       "attempts": 1,
       "last_error": null,
       "last_attempt_utc": "2026-11-27T23:39:18+00:00"
+    },
+    {
+      "id": "2026-11-28-s-quiz-palla",
+      "lesson_id": "IBI-L0018",
+      "type": "story",
+      "scheduled_utc": "2026-11-28T12:30:00Z",
+      "media": [
+        "2026-11-28-s-quiz-palla.jpg"
+      ],
+      "caption_file": null,
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-28",
+      "asset_hashes": {
+        "2026-11-28-s-quiz-palla.jpg": "8fe0b4cfe110123f919b8f555ddafe0fc6d97fe22ccd5087edc6361d25166512"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "promo": false,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-28-c-one-letter-or-two",
+      "lesson_id": "IBI-L0019",
+      "type": "carousel",
+      "scheduled_utc": "2026-11-28T13:10:00Z",
+      "media": [
+        "2026-11-28-c-one-letter-or-two-01.jpg",
+        "2026-11-28-c-one-letter-or-two-02.jpg",
+        "2026-11-28-c-one-letter-or-two-03.jpg",
+        "2026-11-28-c-one-letter-or-two-04.jpg",
+        "2026-11-28-c-one-letter-or-two-05.jpg",
+        "2026-11-28-c-one-letter-or-two-06.jpg",
+        "2026-11-28-c-one-letter-or-two-07.jpg"
+      ],
+      "caption_file": "build/captions/2026-11-28-c-one-letter-or-two.clean.txt",
+      "cover": null,
+      "audio_kind": "none",
+      "ai_generated": false,
+      "approval_id": "AUTO-2026-11-28",
+      "asset_hashes": {
+        "2026-11-28-c-one-letter-or-two-01.jpg": "4ee2907e0787950b5d16bfb1dd4dfb49eb260cb633d5d50046206bc7597439a8",
+        "2026-11-28-c-one-letter-or-two-02.jpg": "69cbfc6b6170712ca1801d7aa1444c971a03729a45447fc2984ad15565724bfb",
+        "2026-11-28-c-one-letter-or-two-03.jpg": "29340932a255af165783c92b6309df15ca268814e19496dd042ed436b1446e31",
+        "2026-11-28-c-one-letter-or-two-04.jpg": "1f6ff9c875d893005b927946411a4e218e346713f95d30964c2a64410825ff17",
+        "2026-11-28-c-one-letter-or-two-05.jpg": "08f6904c537a9893542bd7b6ba1017403cb70ba0ecf54388e96432364e956628",
+        "2026-11-28-c-one-letter-or-two-06.jpg": "93beb2dc90beef5374415f92785d75150d9a403da339dac3a6947591d7c113a2",
+        "2026-11-28-c-one-letter-or-two-07.jpg": "c26f5e91f38865673240871d966514f33ee09c45923e21bee81d4b8b4e7d6145",
+        "caption": "fe5d8289c7374c10e9ec09b0d21eb7d400045822680d1610afc20f79fbb7b9c4"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "promo": false,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
+    },
+    {
+      "id": "2026-11-28-r-one-letter-or-two",
+      "lesson_id": "IBI-L0020",
+      "type": "reel",
+      "scheduled_utc": "2026-11-28T17:35:00Z",
+      "media": [
+        "2026-11-28-r-one-letter-or-two.mp4"
+      ],
+      "caption_file": "build/captions/2026-11-28-r-one-letter-or-two.clean.txt",
+      "cover": "2026-11-28-r-one-letter-or-two-cover.jpg",
+      "audio_kind": "native_recording",
+      "ai_generated": true,
+      "approval_id": "AUTO-2026-11-28",
+      "asset_hashes": {
+        "2026-11-28-r-one-letter-or-two.mp4": "19f90bc3714100cac40dd24c701af880eedf5f0932f53a4fcfb8bc4b1a187786",
+        "2026-11-28-r-one-letter-or-two-cover.jpg": "8f670447fb1fe5b0915eb8bc05d029ebbb40d5e1ba44682bd22bc5008a3491d2",
+        "caption": "110261e9148d28d70af5bf04593c04222c90a6f48e525ad23ab767c4a4bb3324"
+      },
+      "requires_published": null,
+      "cap_exempt": null,
+      "promo": false,
+      "status": "approved",
+      "container_id": null,
+      "published_id": null,
+      "published_at_utc": null,
+      "attempts": 0,
+      "last_error": null
     }
   ]
 }
