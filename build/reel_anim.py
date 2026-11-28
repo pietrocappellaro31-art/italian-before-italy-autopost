@@ -423,12 +423,16 @@ def draw_beat(beat, t, dur, idx, n, level, img):
         k = pop(t / 0.35)
         tag(d, beat["series"], min(t / 0.25, 1), CREAM if dark else BLUE, BLUE if dark else CREAM)
         y = hook_title(d, beat["title"], beat.get("hl", ""), M, 330, t, hfg, hdim, dark)
-        if beat.get("sub") and t > 0.55:
-            text_block(d, beat["sub"], font(SANS, 46), M, y + 20, W - 2 * M, hfg)
+        sub_end = y
+        if beat.get("sub"):                            # same position on every frame (no jump when it appears)
+            sub_end = y + 20 + len(wrap(d, beat["sub"], font(SANS, 46), W - 2 * M)) * 46 * 1.2
+            if t > 0.55:
+                text_block(d, beat["sub"], font(SANS, 46), M, y + 20, W - 2 * M, hfg)
+        pics_y = max(880, sub_end + 130)
         if PIETRO_ON:
             draw_pietro(img, t, 0.0, "hook", W // 2, H + 40, 820, enter=0.45)
         if t > 0.3:
-            sound_pill(img, t, dark, 1040 if PIETRO_ON else 1440)
+            sound_pill(img, t, dark, (pics_y + 150) if PIETRO_ON else 1440)
         if beat.get("art") == "cup":
             cup(d, W // 2, 1150, (t - 0.3) / 1.6, t, with_face=True, happy=t > 1.8)
         elif beat.get("art") == "pairs":
@@ -447,7 +451,7 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             sticker(img, beat.get("pair_sticker", "hear the difference?"), W // 2, 1340, (t - 1.2) / 0.5, angle=4)
         elif beat.get("pics"):
             if PIETRO_ON:
-                fly_in(img, d, beat["pics"][:3], W // 2, 880, 190, t, 0.25)
+                fly_in(img, d, beat["pics"][:3], W // 2, pics_y, 190, t, 0.25)
             else:
                 fly_in(img, d, beat["pics"][:3], W // 2, 1150, 260 if len(beat["pics"]) < 3 else 220, t, 0.25)
     elif kind in ("listen", "turn"):
@@ -536,6 +540,17 @@ def draw_beat(beat, t, dur, idx, n, level, img):
         if oi:
             size = min(size, 64)
         f = font(SERIF, size, 600)
+
+        def opt_lines(text):                           # long options wrap onto two lines instead of overflowing
+            if d.textlength(text, font=f) <= card_w - 40:
+                return [text]
+            words = text.split()
+            best = min(range(1, len(words)), key=lambda i: max(d.textlength(" ".join(words[:i]), font=f),
+                                                                d.textlength(" ".join(words[i:]), font=f)))
+            return [" ".join(words[:best]), " ".join(words[best:])]
+        while size > 34 and any(max(d.textlength(ln, font=f) for ln in opt_lines(o)) > card_w - 40 for o in opts):
+            size -= 3
+            f = font(SERIF, size, 600)
         for k, word in enumerate(opts):
             x0 = M + k * ((W - 2 * M) // 2 + 15)
             x1 = x0 + (W - 2 * M) // 2 - 15
@@ -546,8 +561,12 @@ def draw_beat(beat, t, dur, idx, n, level, img):
             fill = BLUE if (done and right) else WHITE
             col = CREAM if (done and right) else (RULE if done else BLUE)
             d.rounded_rectangle([x0, y0, x1, y0 + 300], radius=30, fill=fill, outline=BLUE if not done else fill, width=4)
-            ty = y0 + (225 if oi else 150) - size * 0.6
-            d.text((x0 + (x1 - x0 - d.textlength(word, font=f)) / 2, ty), word, font=f, fill=col)
+            lines = opt_lines(word)
+            lh = size * 1.12
+            ty = y0 + (225 if oi else 150) - size * 0.6 - (len(lines) - 1) * lh / 2
+            for ln in lines:
+                d.text((x0 + (x1 - x0 - d.textlength(ln, font=f)) / 2, ty), ln, font=f, fill=col)
+                ty += lh
             if oi:
                 icons.paste_icon(img, oi[k], (x0 + x1) / 2, y0 + 100, 140, q, t, bob=4 if not done else 0)
             if done and right:
