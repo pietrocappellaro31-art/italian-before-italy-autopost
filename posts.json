@@ -617,10 +617,10 @@
       "requires_published": null,
       "cap_exempt": null,
       "promo": false,
-      "status": "publish_pending",
+      "status": "published",
       "container_id": "17904214452395055",
-      "published_id": null,
-      "published_at_utc": null,
+      "published_id": "17944423905400491",
+      "published_at_utc": "2026-11-28T13:39:37+00:00",
       "attempts": 1,
       "last_error": null,
       "last_attempt_utc": "2026-11-28T13:39:00+00:00"
